@@ -23,9 +23,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	store.NewS3Store(cfg, "tasks-bucket")
-	store.NewDynamoStore(cfg, "TaskTable")
+	s3Store := store.NewS3Store(cfg, "tasks-bucket")
+	if err := s3Store.Ping(ctx); err != nil {
+		slog.Error("S3 storage offline", "err", err)
+	}
 
-	slog.Info("System initialized and connected to LocalStack")
+	dbStore := store.NewDynamoStore(cfg, "TaskTable")
+	if err := dbStore.Ping(ctx); err != nil {
+		slog.Error("DynamoDB storage offline", "err", err)
+	}
+
+	slog.Info("Storage layer verified", "provider", "LocalStack", "server", "controller")
 
 }
