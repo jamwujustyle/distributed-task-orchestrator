@@ -1,10 +1,10 @@
-root = "."
-tmp = "tmp"
+root = "/app"
+tmp = "/app/tmp/cli"
 
 [build]
-    cmd = "go build -o ./tmp/cli ./cmd/cli/"
+    cmd = "go build -o /app/tmp/cli/main /app/cmd/cli/"
 
-    bin = "tmp/cli"
+    entrypoint = "/app/tmp/cli/main"
 
     include_ext = ["go", "proto", "html", "tmpl"]
 
@@ -15,3 +15,6 @@ tmp = "tmp"
 [log]
     time = true
     main_only = true
+
+[color]
+    app = "cyan"
