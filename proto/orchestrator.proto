@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package orchestrator;
+
+option go_package = "github.com/jamwujustyle/distributed-task-orchestrator";
+
+
+message TaskId {
+    string ID = 1;
+}
+
+message Task {
+    string name = 1;
+    string status = 2;
+}
+message UpdateTaskRequest {
+    string id = 1;
+    string status = 2;
+}
+
+service TaskService {
+    rpc SubmitTask(Task) returns (TaskId);
+    rpc RetrieveTask(TaskId) returns (Task);
+    rpc UpdateTask(UpdateTaskRequest) returns (google.protobuf.Empty);
+    rpc PollTasks(google.protobuf.Empty) returns (stream Task);
+}

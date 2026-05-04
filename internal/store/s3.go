@@ -16,7 +16,9 @@ type S3Store struct {
 
 func NewS3Store(cfg aws.Config, bucketName string) *S3Store {
 	return &S3Store{
-		Client: s3.NewFromConfig(cfg),
+		Client: s3.NewFromConfig(cfg, func(o *s3.Options) {
+			o.UsePathStyle = true
+		}),
 		Bucket: bucketName,
 	}
 }

@@ -26,11 +26,13 @@ func main() {
 	s3Store := store.NewS3Store(cfg, "tasks-bucket")
 	if err := s3Store.Ping(ctx); err != nil {
 		slog.Error("S3 storage offline", "err", err)
+		os.Exit(1)
 	}
 
 	dbStore := store.NewDynamoStore(cfg, "TaskTable")
 	if err := dbStore.Ping(ctx); err != nil {
 		slog.Error("DynamoDB storage offline", "err", err)
+		os.Exit(1)
 	}
 
 	slog.Info("Storage layer verified", "provider", "LocalStack", "server", "controller")

@@ -9,15 +9,16 @@ services:
     volumes:
       - ./scripts/localstack-init.sh:/etc/localstack/init/ready.d/init.sh
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "awslocal s3 ls s3://tasks-bucket && awslocal dynamodb describe-table --table-name TaskTable",
-        ]
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 5s
-      timeout: 3s
-      retries: 10
-
+      timeout: 5s
+      retries: 15
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "2m"
+        max-file: "3"
   controller:
     build:
       context: .
@@ -27,14 +28,13 @@ services:
     ports:
       - "8000:8000"
     environment:
-      AWS_ENDPOINT_URL: http://localhost:4566
+      AWS_ENDPOINT_URL: http://localstack:4566
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
-      AWS_DEFAULT_REGION: us-east-1
+      AWS_REGION: us-east-1
     depends_on:
       localstack:
         condition: service_healthy
-
     develop:
       watch:
         - action: sync
@@ -43,6 +43,7 @@ services:
           ignore:
             - bin/
             - .git/
+            - tmp/
             - "**/*_test.go"
         - action: rebuild
           path: go.sum
@@ -58,14 +59,13 @@ services:
     ports:
       - "8001:8001"
     environment:
-      AWS_ENDPOINT_URL: http://localhost:4566
+      AWS_ENDPOINT_URL: http://localstack:4566
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
-      AWS_DEFAULT_REGION: us-east-1
+      AWS_REGION: us-east-1
     depends_on:
       localstack:
         condition: service_healthy
-
     develop:
       watch:
         - action: sync
@@ -73,6 +73,7 @@ services:
           target: /app
           ignore:
             - bin/
+            - tmp/
             - .git/
             - "**/*_test.go"
         - action: rebuild
