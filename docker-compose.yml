@@ -1,18 +1,81 @@
 services:
   localstack:
     image: localstack/localstack:3
+    container_name: localstack
     ports:
       - "4566:4566"
     environment:
-      SERVICES: s3.dynamodb
-      DEFAULT_REGION: us-east-1
+      SERVICES: s3,dynamodb
     volumes:
       - ./scripts/localstack-init.sh:/etc/localstack/init/ready.d/init.sh
     healthcheck:
-      test: ["CMD", "curl", "f", "http://localhost:4566/_localstack/health"]
-    interval: 5s
-    timeout: 3s
-    retries: 10
+      test:
+        [
+          "CMD-SHELL",
+          "awslocal s3 ls s3://tasks-bucket && awslocal dynamodb describe-table --table-name TaskTable",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   controller:
-    image:
+    build:
+      context: .
+      network: host
+    container_name: controller
+    command: air -c .air.controller.toml
+    ports:
+      - "8000:8000"
+    environment:
+      AWS_ENDPOINT_URL: http://localhost:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+    depends_on:
+      localstack:
+        condition: service_healthy
+
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - bin/
+            - .git/
+            - "**/*_test.go"
+        - action: rebuild
+          path: go.sum
+        - action: rebuild
+          path: go.mod
+
+  worker:
+    build:
+      context: .
+      network: host
+    container_name: worker
+    command: air -c .air.worker.toml
+    ports:
+      - "8001:8001"
+    environment:
+      AWS_ENDPOINT_URL: http://localhost:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+    depends_on:
+      localstack:
+        condition: service_healthy
+
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - bin/
+            - .git/
+            - "**/*_test.go"
+        - action: rebuild
+          path: go.mod
+        - action: rebuild
+          path: go.sum
