@@ -1,0 +1,17 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+    cmd = "go build -o ./tmp/worker ./cmd/worker/"
+
+    bin = "tmp/worker"
+
+    include_ext = ["go", "proto", "tmpl", "html"]
+
+    exclude_dir = ["tmp", "vendor", "test", "deployments"]
+
+    delay = 1000
+
+[log]
+    time = true
+    main_only = true

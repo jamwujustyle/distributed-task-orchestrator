@@ -1,0 +1,17 @@
+root = "."
+tmp = "tmp"
+
+[build]
+    cmd = "go build -o ./tmp/cli ./cmd/cli/"
+
+    bin = "tmp/cli"
+
+    include_ext = ["go", "proto", "html", "tmpl"]
+
+    exclude_dir = ["tmp", "vendor", "test", "deployments"]
+
+    delay = 1000
+
+[log]
+    time = true
+    main_only = true
