@@ -40,6 +40,10 @@ func NewDynamoStore(cfg aws.Config, tableName string) *DynamoStore {
 }
 
 func (d *DynamoStore) SaveTask(ctx context.Context, task Task) error {
+	now := time.Now().Unix()
+	task.CreatedAt = now
+	task.UpdatedAt = now
+
 	item, err := attributevalue.MarshalMap(task)
 	if err != nil {
 		return fmt.Errorf("failed to marshal task: %w", err)

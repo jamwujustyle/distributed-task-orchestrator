@@ -12,8 +12,9 @@ message TaskId {
 }
 
 message Task {
-    string name = 1;
-    string status = 2;
+    string id = 1;
+    string script_s3_key = 2;
+    string status = 3;
 }
 message UpdateTaskRequest {
     string id = 1;

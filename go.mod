@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.20.39
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.57.3
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.100.1
+	github.com/google/uuid v1.6.0
 	github.com/jamwujustyle/logger v0.0.0-20260501060744-242c2b40eadd
 	google.golang.org/grpc v1.81.0
 	google.golang.org/protobuf v1.36.11

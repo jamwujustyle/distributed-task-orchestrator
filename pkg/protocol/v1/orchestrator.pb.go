@@ -68,8 +68,9 @@ func (x *TaskId) GetID() string {
 
 type Task struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ScriptS3Key   string                 `protobuf:"bytes,2,opt,name=script_s3_key,json=scriptS3Key,proto3" json:"script_s3_key,omitempty"`
+	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -104,9 +105,16 @@ func (*Task) Descriptor() ([]byte, []int) {
 	return file_orchestrator_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Task) GetName() string {
+func (x *Task) GetId() string {
 	if x != nil {
-		return x.Name
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Task) GetScriptS3Key() string {
+	if x != nil {
+		return x.ScriptS3Key
 	}
 	return ""
 }
@@ -176,10 +184,11 @@ const file_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"\x12orchestrator.proto\x12\forchestrator\x1a\x1bgoogle/protobuf/empty.proto\"\x18\n" +
 	"\x06TaskId\x12\x0e\n" +
-	"\x02ID\x18\x01 \x01(\tR\x02ID\"2\n" +
-	"\x04Task\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\";\n" +
+	"\x02ID\x18\x01 \x01(\tR\x02ID\"R\n" +
+	"\x04Task\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\"\n" +
+	"\rscript_s3_key\x18\x02 \x01(\tR\vscriptS3Key\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\";\n" +
 	"\x11UpdateTaskRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status2\x81\x02\n" +
