@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -22,18 +23,7 @@ func NewS3Store(cfg aws.Config, bucketName string) *S3Store {
 		Bucket: bucketName,
 	}
 }
-
-func (s *S3Store) ListObjects(ctx context.Context) (*s3.ListObjectsV2Output, error) {
-	output, err := s.Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
-		Bucket: aws.String(s.Bucket),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Unable to list objects: %w", err)
-	}
-	return output, nil
-}
-
-func (s *S3Store) UploadTaskScript(ctx context.Context, key string, content []byte) error {
+func (s *S3Store) UploadScript(ctx context.Context, key string, content []byte) error {
 	_, err := s.Client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(s.Bucket),
 		Key:    aws.String(key),
@@ -43,6 +33,33 @@ func (s *S3Store) UploadTaskScript(ctx context.Context, key string, content []by
 		return fmt.Errorf("failed to upload script to S3 : %w", err)
 	}
 	return nil
+}
+
+func (s *S3Store) GetScript(ctx context.Context, key string) ([]byte, error) {
+	r, err := s.Client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(s.Bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve an object: %w", err)
+	}
+	defer r.Body.Close()
+
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read object body: %w", err)
+	}
+	return data, err
+}
+
+func (s *S3Store) ListScripts(ctx context.Context) (*s3.ListObjectsV2Output, error) {
+	output, err := s.Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+		Bucket: aws.String(s.Bucket),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list objects: %w", err)
+	}
+	return output, nil
 }
 
 func (s *S3Store) Ping(ctx context.Context) error {

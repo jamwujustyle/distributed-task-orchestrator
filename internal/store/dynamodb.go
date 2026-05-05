@@ -39,7 +39,7 @@ func NewDynamoStore(cfg aws.Config, tableName string) *DynamoStore {
 	}
 }
 
-func (d *DynamoStore) CreateTask(ctx context.Context, task Task) error {
+func (d *DynamoStore) SaveTask(ctx context.Context, task Task) error {
 	item, err := attributevalue.MarshalMap(task)
 	if err != nil {
 		return fmt.Errorf("failed to marshal task: %w", err)
@@ -56,7 +56,31 @@ func (d *DynamoStore) CreateTask(ctx context.Context, task Task) error {
 	return nil
 }
 
-func (d *DynamoStore) UpdateTaskStatus(ctx context.Context, id string, status TaskStatus) error {
+func (d *DynamoStore) GetTask(ctx context.Context, id string) (*Task, error) {
+	k, err := attributevalue.MarshalMap(map[string]string{"ID": id})
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal key: %w", err)
+	}
+	r, err := d.Client.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(d.Table),
+		Key:       k,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get item: %w", err)
+	}
+	if r.Item == nil {
+		return nil, fmt.Errorf("task not found: %s", id)
+	}
+
+	var t Task
+	if err := attributevalue.UnmarshalMap(r.Item, &t); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal: %w", err)
+	}
+
+	return &t, nil
+}
+
+func (d *DynamoStore) UpdateTask(ctx context.Context, id string, status TaskStatus) error {
 	key, err := attributevalue.MarshalMap(map[string]string{"ID": id})
 	if err != nil {
 		return fmt.Errorf("failed to marshal key: %w", err)
@@ -82,7 +106,31 @@ func (d *DynamoStore) UpdateTaskStatus(ctx context.Context, id string, status Ta
 	if err != nil {
 		return fmt.Errorf("failed to update status: %w", err)
 	}
-	return err
+	return nil
+}
+
+func (d *DynamoStore) GetPendingTasks(ctx context.Context) ([]Task, error) {
+	vs, err := attributevalue.MarshalMap(map[string]any{":status": StatusPending})
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal status: %w", err)
+	}
+
+	r, err := d.Client.Scan(ctx, &dynamodb.ScanInput{
+		TableName:                 aws.String(d.Table),
+		FilterExpression:          aws.String("#status = :status"),
+		ExpressionAttributeNames:  map[string]string{"#status": "Status"},
+		ExpressionAttributeValues: vs,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan tasks: %w", err)
+	}
+	var ts []Task
+
+	if err = attributevalue.UnmarshalListOfMaps(r.Items, &ts); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal tasks: %w", err)
+	}
+
+	return ts, nil
 }
 
 func (d *DynamoStore) Ping(ctx context.Context) error {
