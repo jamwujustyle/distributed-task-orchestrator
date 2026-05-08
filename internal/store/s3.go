@@ -26,7 +26,6 @@ func NewS3Store(cfg aws.Config, bucketName string) *S3Store {
 func (s *S3Store) UploadScript(ctx context.Context, key string, content []byte) error {
 	_, err := s.Client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(s.Bucket),
-		Key:    aws.String(key),
 		Body:   bytes.NewReader(content),
 	})
 	if err != nil {
