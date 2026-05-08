@@ -7,6 +7,13 @@ package orchestrator;
 option go_package = "github.com/jamwujustyle/distributed-task-orchestrator";
 
 
+enum TaskStatus {
+    PENDING = 0;
+    RUNNING = 1;
+    COMPLETED = 2;
+    FAILED = 3;
+}
+
 message TaskId {
     string ID = 1;
 }
@@ -14,12 +21,13 @@ message TaskId {
 message Task {
     string id = 1;
     string script_s3_key = 2;
-    string status = 3;
+    TaskStatus status = 3;
 }
 message UpdateTaskRequest {
     string id = 1;
-    string status = 2;
+    TaskStatus status = 2;
 }
+
 
 service TaskService {
     rpc SubmitTask(Task) returns (TaskId);

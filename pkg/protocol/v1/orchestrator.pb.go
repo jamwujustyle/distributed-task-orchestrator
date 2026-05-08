@@ -22,6 +22,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type TaskStatus int32
+
+const (
+	TaskStatus_PENDING   TaskStatus = 0
+	TaskStatus_RUNNING   TaskStatus = 1
+	TaskStatus_COMPLETED TaskStatus = 2
+	TaskStatus_FAILED    TaskStatus = 3
+)
+
+// Enum value maps for TaskStatus.
+var (
+	TaskStatus_name = map[int32]string{
+		0: "PENDING",
+		1: "RUNNING",
+		2: "COMPLETED",
+		3: "FAILED",
+	}
+	TaskStatus_value = map[string]int32{
+		"PENDING":   0,
+		"RUNNING":   1,
+		"COMPLETED": 2,
+		"FAILED":    3,
+	}
+)
+
+func (x TaskStatus) Enum() *TaskStatus {
+	p := new(TaskStatus)
+	*p = x
+	return p
+}
+
+func (x TaskStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TaskStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_orchestrator_proto_enumTypes[0].Descriptor()
+}
+
+func (TaskStatus) Type() protoreflect.EnumType {
+	return &file_orchestrator_proto_enumTypes[0]
+}
+
+func (x TaskStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TaskStatus.Descriptor instead.
+func (TaskStatus) EnumDescriptor() ([]byte, []int) {
+	return file_orchestrator_proto_rawDescGZIP(), []int{0}
+}
+
 type TaskId struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ID            string                 `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
@@ -70,7 +122,7 @@ type Task struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	ScriptS3Key   string                 `protobuf:"bytes,2,opt,name=script_s3_key,json=scriptS3Key,proto3" json:"script_s3_key,omitempty"`
-	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	Status        TaskStatus             `protobuf:"varint,3,opt,name=status,proto3,enum=orchestrator.TaskStatus" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -119,17 +171,17 @@ func (x *Task) GetScriptS3Key() string {
 	return ""
 }
 
-func (x *Task) GetStatus() string {
+func (x *Task) GetStatus() TaskStatus {
 	if x != nil {
 		return x.Status
 	}
-	return ""
+	return TaskStatus_PENDING
 }
 
 type UpdateTaskRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Status        TaskStatus             `protobuf:"varint,2,opt,name=status,proto3,enum=orchestrator.TaskStatus" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -171,11 +223,11 @@ func (x *UpdateTaskRequest) GetId() string {
 	return ""
 }
 
-func (x *UpdateTaskRequest) GetStatus() string {
+func (x *UpdateTaskRequest) GetStatus() TaskStatus {
 	if x != nil {
 		return x.Status
 	}
-	return ""
+	return TaskStatus_PENDING
 }
 
 var File_orchestrator_proto protoreflect.FileDescriptor
@@ -184,14 +236,21 @@ const file_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"\x12orchestrator.proto\x12\forchestrator\x1a\x1bgoogle/protobuf/empty.proto\"\x18\n" +
 	"\x06TaskId\x12\x0e\n" +
-	"\x02ID\x18\x01 \x01(\tR\x02ID\"R\n" +
+	"\x02ID\x18\x01 \x01(\tR\x02ID\"l\n" +
 	"\x04Task\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\"\n" +
-	"\rscript_s3_key\x18\x02 \x01(\tR\vscriptS3Key\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\";\n" +
+	"\rscript_s3_key\x18\x02 \x01(\tR\vscriptS3Key\x120\n" +
+	"\x06status\x18\x03 \x01(\x0e2\x18.orchestrator.TaskStatusR\x06status\"U\n" +
 	"\x11UpdateTaskRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status2\x81\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x120\n" +
+	"\x06status\x18\x02 \x01(\x0e2\x18.orchestrator.TaskStatusR\x06status*A\n" +
+	"\n" +
+	"TaskStatus\x12\v\n" +
+	"\aPENDING\x10\x00\x12\v\n" +
+	"\aRUNNING\x10\x01\x12\r\n" +
+	"\tCOMPLETED\x10\x02\x12\n" +
+	"\n" +
+	"\x06FAILED\x10\x032\x81\x02\n" +
 	"\vTaskService\x126\n" +
 	"\n" +
 	"SubmitTask\x12\x12.orchestrator.Task\x1a\x14.orchestrator.TaskId\x128\n" +
@@ -212,27 +271,31 @@ func file_orchestrator_proto_rawDescGZIP() []byte {
 	return file_orchestrator_proto_rawDescData
 }
 
+var file_orchestrator_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_orchestrator_proto_goTypes = []any{
-	(*TaskId)(nil),            // 0: orchestrator.TaskId
-	(*Task)(nil),              // 1: orchestrator.Task
-	(*UpdateTaskRequest)(nil), // 2: orchestrator.UpdateTaskRequest
-	(*emptypb.Empty)(nil),     // 3: google.protobuf.Empty
+	(TaskStatus)(0),           // 0: orchestrator.TaskStatus
+	(*TaskId)(nil),            // 1: orchestrator.TaskId
+	(*Task)(nil),              // 2: orchestrator.Task
+	(*UpdateTaskRequest)(nil), // 3: orchestrator.UpdateTaskRequest
+	(*emptypb.Empty)(nil),     // 4: google.protobuf.Empty
 }
 var file_orchestrator_proto_depIdxs = []int32{
-	1, // 0: orchestrator.TaskService.SubmitTask:input_type -> orchestrator.Task
-	0, // 1: orchestrator.TaskService.RetrieveTask:input_type -> orchestrator.TaskId
-	2, // 2: orchestrator.TaskService.UpdateTask:input_type -> orchestrator.UpdateTaskRequest
-	3, // 3: orchestrator.TaskService.PollTasks:input_type -> google.protobuf.Empty
-	0, // 4: orchestrator.TaskService.SubmitTask:output_type -> orchestrator.TaskId
-	1, // 5: orchestrator.TaskService.RetrieveTask:output_type -> orchestrator.Task
-	3, // 6: orchestrator.TaskService.UpdateTask:output_type -> google.protobuf.Empty
-	1, // 7: orchestrator.TaskService.PollTasks:output_type -> orchestrator.Task
-	4, // [4:8] is the sub-list for method output_type
-	0, // [0:4] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: orchestrator.Task.status:type_name -> orchestrator.TaskStatus
+	0, // 1: orchestrator.UpdateTaskRequest.status:type_name -> orchestrator.TaskStatus
+	2, // 2: orchestrator.TaskService.SubmitTask:input_type -> orchestrator.Task
+	1, // 3: orchestrator.TaskService.RetrieveTask:input_type -> orchestrator.TaskId
+	3, // 4: orchestrator.TaskService.UpdateTask:input_type -> orchestrator.UpdateTaskRequest
+	4, // 5: orchestrator.TaskService.PollTasks:input_type -> google.protobuf.Empty
+	1, // 6: orchestrator.TaskService.SubmitTask:output_type -> orchestrator.TaskId
+	2, // 7: orchestrator.TaskService.RetrieveTask:output_type -> orchestrator.Task
+	4, // 8: orchestrator.TaskService.UpdateTask:output_type -> google.protobuf.Empty
+	2, // 9: orchestrator.TaskService.PollTasks:output_type -> orchestrator.Task
+	6, // [6:10] is the sub-list for method output_type
+	2, // [2:6] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_orchestrator_proto_init() }
@@ -245,13 +308,14 @@ func file_orchestrator_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_orchestrator_proto_rawDesc), len(file_orchestrator_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_orchestrator_proto_goTypes,
 		DependencyIndexes: file_orchestrator_proto_depIdxs,
+		EnumInfos:         file_orchestrator_proto_enumTypes,
 		MessageInfos:      file_orchestrator_proto_msgTypes,
 	}.Build()
 	File_orchestrator_proto = out.File
