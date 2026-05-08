@@ -13,7 +13,7 @@ func doRetrieveScript(ctx context.Context, c pb.TaskServiceClient, key string) e
 		Key: key,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to retrieve script", "err", err)
+		return fmt.Errorf("failed to retrieve script, %w", err)
 	}
 	slog.Info("retrieved script successfully", "content", s.GetContent())
 	return nil
