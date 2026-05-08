@@ -47,5 +47,5 @@ func main() {
 	}
 	defer conn.Close()
 	c := pb.NewTaskServiceClient(conn)
-
+	doPollTasks(ctx, c)
 }
