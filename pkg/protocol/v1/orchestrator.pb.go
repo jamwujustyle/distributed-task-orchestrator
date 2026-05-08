@@ -230,6 +230,94 @@ func (x *UpdateTaskRequest) GetStatus() TaskStatus {
 	return TaskStatus_PENDING
 }
 
+type Script struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Content       []byte                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Script) Reset() {
+	*x = Script{}
+	mi := &file_orchestrator_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Script) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Script) ProtoMessage() {}
+
+func (x *Script) ProtoReflect() protoreflect.Message {
+	mi := &file_orchestrator_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Script.ProtoReflect.Descriptor instead.
+func (*Script) Descriptor() ([]byte, []int) {
+	return file_orchestrator_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Script) GetContent() []byte {
+	if x != nil {
+		return x.Content
+	}
+	return nil
+}
+
+type ScriptKey struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ScriptKey) Reset() {
+	*x = ScriptKey{}
+	mi := &file_orchestrator_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScriptKey) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScriptKey) ProtoMessage() {}
+
+func (x *ScriptKey) ProtoReflect() protoreflect.Message {
+	mi := &file_orchestrator_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScriptKey.ProtoReflect.Descriptor instead.
+func (*ScriptKey) Descriptor() ([]byte, []int) {
+	return file_orchestrator_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ScriptKey) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
 var File_orchestrator_proto protoreflect.FileDescriptor
 
 const file_orchestrator_proto_rawDesc = "" +
@@ -243,21 +331,28 @@ const file_orchestrator_proto_rawDesc = "" +
 	"\x06status\x18\x03 \x01(\x0e2\x18.orchestrator.TaskStatusR\x06status\"U\n" +
 	"\x11UpdateTaskRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x120\n" +
-	"\x06status\x18\x02 \x01(\x0e2\x18.orchestrator.TaskStatusR\x06status*A\n" +
+	"\x06status\x18\x02 \x01(\x0e2\x18.orchestrator.TaskStatusR\x06status\"\"\n" +
+	"\x06Script\x12\x18\n" +
+	"\acontent\x18\x01 \x01(\fR\acontent\"\x1d\n" +
+	"\tScriptKey\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key*A\n" +
 	"\n" +
 	"TaskStatus\x12\v\n" +
 	"\aPENDING\x10\x00\x12\v\n" +
 	"\aRUNNING\x10\x01\x12\r\n" +
 	"\tCOMPLETED\x10\x02\x12\n" +
 	"\n" +
-	"\x06FAILED\x10\x032\x81\x02\n" +
+	"\x06FAILED\x10\x032\xc3\x03\n" +
 	"\vTaskService\x126\n" +
 	"\n" +
 	"SubmitTask\x12\x12.orchestrator.Task\x1a\x14.orchestrator.TaskId\x128\n" +
 	"\fRetrieveTask\x12\x14.orchestrator.TaskId\x1a\x12.orchestrator.Task\x12E\n" +
 	"\n" +
 	"UpdateTask\x12\x1f.orchestrator.UpdateTaskRequest\x1a\x16.google.protobuf.Empty\x129\n" +
-	"\tPollTasks\x12\x16.google.protobuf.Empty\x1a\x12.orchestrator.Task0\x01B7Z5github.com/jamwujustyle/distributed-task-orchestratorb\x06proto3"
+	"\tPollTasks\x12\x16.google.protobuf.Empty\x1a\x12.orchestrator.Task0\x01\x12=\n" +
+	"\fUploadScript\x12\x14.orchestrator.Script\x1a\x17.orchestrator.ScriptKey\x12?\n" +
+	"\x0eRetrieveScript\x12\x17.orchestrator.ScriptKey\x1a\x14.orchestrator.Script\x12@\n" +
+	"\vListScripts\x12\x16.google.protobuf.Empty\x1a\x17.orchestrator.ScriptKey0\x01B7Z5github.com/jamwujustyle/distributed-task-orchestratorb\x06proto3"
 
 var (
 	file_orchestrator_proto_rawDescOnce sync.Once
@@ -272,13 +367,15 @@ func file_orchestrator_proto_rawDescGZIP() []byte {
 }
 
 var file_orchestrator_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_orchestrator_proto_goTypes = []any{
 	(TaskStatus)(0),           // 0: orchestrator.TaskStatus
 	(*TaskId)(nil),            // 1: orchestrator.TaskId
 	(*Task)(nil),              // 2: orchestrator.Task
 	(*UpdateTaskRequest)(nil), // 3: orchestrator.UpdateTaskRequest
-	(*emptypb.Empty)(nil),     // 4: google.protobuf.Empty
+	(*Script)(nil),            // 4: orchestrator.Script
+	(*ScriptKey)(nil),         // 5: orchestrator.ScriptKey
+	(*emptypb.Empty)(nil),     // 6: google.protobuf.Empty
 }
 var file_orchestrator_proto_depIdxs = []int32{
 	0, // 0: orchestrator.Task.status:type_name -> orchestrator.TaskStatus
@@ -286,13 +383,19 @@ var file_orchestrator_proto_depIdxs = []int32{
 	2, // 2: orchestrator.TaskService.SubmitTask:input_type -> orchestrator.Task
 	1, // 3: orchestrator.TaskService.RetrieveTask:input_type -> orchestrator.TaskId
 	3, // 4: orchestrator.TaskService.UpdateTask:input_type -> orchestrator.UpdateTaskRequest
-	4, // 5: orchestrator.TaskService.PollTasks:input_type -> google.protobuf.Empty
-	1, // 6: orchestrator.TaskService.SubmitTask:output_type -> orchestrator.TaskId
-	2, // 7: orchestrator.TaskService.RetrieveTask:output_type -> orchestrator.Task
-	4, // 8: orchestrator.TaskService.UpdateTask:output_type -> google.protobuf.Empty
-	2, // 9: orchestrator.TaskService.PollTasks:output_type -> orchestrator.Task
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
+	6, // 5: orchestrator.TaskService.PollTasks:input_type -> google.protobuf.Empty
+	4, // 6: orchestrator.TaskService.UploadScript:input_type -> orchestrator.Script
+	5, // 7: orchestrator.TaskService.RetrieveScript:input_type -> orchestrator.ScriptKey
+	6, // 8: orchestrator.TaskService.ListScripts:input_type -> google.protobuf.Empty
+	1, // 9: orchestrator.TaskService.SubmitTask:output_type -> orchestrator.TaskId
+	2, // 10: orchestrator.TaskService.RetrieveTask:output_type -> orchestrator.Task
+	6, // 11: orchestrator.TaskService.UpdateTask:output_type -> google.protobuf.Empty
+	2, // 12: orchestrator.TaskService.PollTasks:output_type -> orchestrator.Task
+	5, // 13: orchestrator.TaskService.UploadScript:output_type -> orchestrator.ScriptKey
+	4, // 14: orchestrator.TaskService.RetrieveScript:output_type -> orchestrator.Script
+	5, // 15: orchestrator.TaskService.ListScripts:output_type -> orchestrator.ScriptKey
+	9, // [9:16] is the sub-list for method output_type
+	2, // [2:9] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -309,7 +412,7 @@ func file_orchestrator_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_orchestrator_proto_rawDesc), len(file_orchestrator_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

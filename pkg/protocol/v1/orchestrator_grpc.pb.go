@@ -20,10 +20,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TaskService_SubmitTask_FullMethodName   = "/orchestrator.TaskService/SubmitTask"
-	TaskService_RetrieveTask_FullMethodName = "/orchestrator.TaskService/RetrieveTask"
-	TaskService_UpdateTask_FullMethodName   = "/orchestrator.TaskService/UpdateTask"
-	TaskService_PollTasks_FullMethodName    = "/orchestrator.TaskService/PollTasks"
+	TaskService_SubmitTask_FullMethodName     = "/orchestrator.TaskService/SubmitTask"
+	TaskService_RetrieveTask_FullMethodName   = "/orchestrator.TaskService/RetrieveTask"
+	TaskService_UpdateTask_FullMethodName     = "/orchestrator.TaskService/UpdateTask"
+	TaskService_PollTasks_FullMethodName      = "/orchestrator.TaskService/PollTasks"
+	TaskService_UploadScript_FullMethodName   = "/orchestrator.TaskService/UploadScript"
+	TaskService_RetrieveScript_FullMethodName = "/orchestrator.TaskService/RetrieveScript"
+	TaskService_ListScripts_FullMethodName    = "/orchestrator.TaskService/ListScripts"
 )
 
 // TaskServiceClient is the client API for TaskService service.
@@ -34,6 +37,9 @@ type TaskServiceClient interface {
 	RetrieveTask(ctx context.Context, in *TaskId, opts ...grpc.CallOption) (*Task, error)
 	UpdateTask(ctx context.Context, in *UpdateTaskRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	PollTasks(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Task], error)
+	UploadScript(ctx context.Context, in *Script, opts ...grpc.CallOption) (*ScriptKey, error)
+	RetrieveScript(ctx context.Context, in *ScriptKey, opts ...grpc.CallOption) (*Script, error)
+	ListScripts(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ScriptKey], error)
 }
 
 type taskServiceClient struct {
@@ -93,6 +99,45 @@ func (c *taskServiceClient) PollTasks(ctx context.Context, in *emptypb.Empty, op
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type TaskService_PollTasksClient = grpc.ServerStreamingClient[Task]
 
+func (c *taskServiceClient) UploadScript(ctx context.Context, in *Script, opts ...grpc.CallOption) (*ScriptKey, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ScriptKey)
+	err := c.cc.Invoke(ctx, TaskService_UploadScript_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) RetrieveScript(ctx context.Context, in *ScriptKey, opts ...grpc.CallOption) (*Script, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Script)
+	err := c.cc.Invoke(ctx, TaskService_RetrieveScript_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) ListScripts(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ScriptKey], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &TaskService_ServiceDesc.Streams[1], TaskService_ListScripts_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[emptypb.Empty, ScriptKey]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type TaskService_ListScriptsClient = grpc.ServerStreamingClient[ScriptKey]
+
 // TaskServiceServer is the server API for TaskService service.
 // All implementations must embed UnimplementedTaskServiceServer
 // for forward compatibility.
@@ -101,6 +146,9 @@ type TaskServiceServer interface {
 	RetrieveTask(context.Context, *TaskId) (*Task, error)
 	UpdateTask(context.Context, *UpdateTaskRequest) (*emptypb.Empty, error)
 	PollTasks(*emptypb.Empty, grpc.ServerStreamingServer[Task]) error
+	UploadScript(context.Context, *Script) (*ScriptKey, error)
+	RetrieveScript(context.Context, *ScriptKey) (*Script, error)
+	ListScripts(*emptypb.Empty, grpc.ServerStreamingServer[ScriptKey]) error
 	mustEmbedUnimplementedTaskServiceServer()
 }
 
@@ -122,6 +170,15 @@ func (UnimplementedTaskServiceServer) UpdateTask(context.Context, *UpdateTaskReq
 }
 func (UnimplementedTaskServiceServer) PollTasks(*emptypb.Empty, grpc.ServerStreamingServer[Task]) error {
 	return status.Error(codes.Unimplemented, "method PollTasks not implemented")
+}
+func (UnimplementedTaskServiceServer) UploadScript(context.Context, *Script) (*ScriptKey, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadScript not implemented")
+}
+func (UnimplementedTaskServiceServer) RetrieveScript(context.Context, *ScriptKey) (*Script, error) {
+	return nil, status.Error(codes.Unimplemented, "method RetrieveScript not implemented")
+}
+func (UnimplementedTaskServiceServer) ListScripts(*emptypb.Empty, grpc.ServerStreamingServer[ScriptKey]) error {
+	return status.Error(codes.Unimplemented, "method ListScripts not implemented")
 }
 func (UnimplementedTaskServiceServer) mustEmbedUnimplementedTaskServiceServer() {}
 func (UnimplementedTaskServiceServer) testEmbeddedByValue()                     {}
@@ -209,6 +266,53 @@ func _TaskService_PollTasks_Handler(srv interface{}, stream grpc.ServerStream) e
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type TaskService_PollTasksServer = grpc.ServerStreamingServer[Task]
 
+func _TaskService_UploadScript_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Script)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).UploadScript(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskService_UploadScript_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).UploadScript(ctx, req.(*Script))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_RetrieveScript_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScriptKey)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).RetrieveScript(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskService_RetrieveScript_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).RetrieveScript(ctx, req.(*ScriptKey))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_ListScripts_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(emptypb.Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(TaskServiceServer).ListScripts(m, &grpc.GenericServerStream[emptypb.Empty, ScriptKey]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type TaskService_ListScriptsServer = grpc.ServerStreamingServer[ScriptKey]
+
 // TaskService_ServiceDesc is the grpc.ServiceDesc for TaskService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,11 +332,24 @@ var TaskService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "UpdateTask",
 			Handler:    _TaskService_UpdateTask_Handler,
 		},
+		{
+			MethodName: "UploadScript",
+			Handler:    _TaskService_UploadScript_Handler,
+		},
+		{
+			MethodName: "RetrieveScript",
+			Handler:    _TaskService_RetrieveScript_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "PollTasks",
 			Handler:       _TaskService_PollTasks_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "ListScripts",
+			Handler:       _TaskService_ListScripts_Handler,
 			ServerStreams: true,
 		},
 	},
