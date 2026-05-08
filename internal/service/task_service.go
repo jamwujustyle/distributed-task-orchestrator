@@ -10,3 +10,7 @@ type TaskService struct {
 	dynamo store.TaskStore
 	s3     store.ArtifactStore
 }
+
+func NewTaskService(dynamo store.TaskStore, s3 store.ArtifactStore) *TaskService {
+	return &TaskService{dynamo: dynamo, s3: s3}
+}

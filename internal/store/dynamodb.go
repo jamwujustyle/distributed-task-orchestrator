@@ -8,23 +8,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-)
-
-type TaskStatus string
-
-const (
-	StatusPending   TaskStatus = "PENDING"
-	StatusRunning   TaskStatus = "RUNNING"
-	StatusCompleted TaskStatus = "COMPLETED"
-	StatusFailed    TaskStatus = "FAILED"
+	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 )
 
 type Task struct {
-	ID          string     `dynamodbav:"ID"`
-	ScriptS3Key string     `dynamodbav:"ScriptS3Key"`
-	Status      TaskStatus `dynamodbav:"Status"`
-	CreatedAt   int64      `dynamodbav:"CreatedAt"`
-	UpdatedAt   int64      `dynamodbav:"UpdatedAt"`
+	ID          string        `dynamodbav:"ID"`
+	ScriptS3Key string        `dynamodbav:"ScriptS3Key"`
+	Status      pb.TaskStatus `dynamodbav:"Status"`
+	CreatedAt   int64         `dynamodbav:"CreatedAt"`
+	UpdatedAt   int64         `dynamodbav:"UpdatedAt"`
 }
 
 type DynamoStore struct {
@@ -84,7 +76,7 @@ func (d *DynamoStore) GetTask(ctx context.Context, id string) (*Task, error) {
 	return &t, nil
 }
 
-func (d *DynamoStore) UpdateTask(ctx context.Context, id string, status TaskStatus) error {
+func (d *DynamoStore) UpdateTask(ctx context.Context, id string, status pb.TaskStatus) error {
 	key, err := attributevalue.MarshalMap(map[string]string{"ID": id})
 	if err != nil {
 		return fmt.Errorf("failed to marshal key: %w", err)
@@ -114,7 +106,7 @@ func (d *DynamoStore) UpdateTask(ctx context.Context, id string, status TaskStat
 }
 
 func (d *DynamoStore) GetPendingTasks(ctx context.Context) ([]Task, error) {
-	vs, err := attributevalue.MarshalMap(map[string]any{":status": StatusPending})
+	vs, err := attributevalue.MarshalMap(map[string]any{":status": pb.TaskStatus_PENDING})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal status: %w", err)
 	}

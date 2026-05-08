@@ -14,7 +14,7 @@ func (s *TaskService) SubmitTask(ctx context.Context, req *pb.Task) (*pb.TaskId,
 	t := store.Task{
 		ID:          uuid.New().String(),
 		ScriptS3Key: req.ScriptS3Key,
-		Status:      store.StatusPending,
+		Status:      pb.TaskStatus_PENDING,
 	}
 
 	if err := s.dynamo.SaveTask(ctx, t); err != nil {

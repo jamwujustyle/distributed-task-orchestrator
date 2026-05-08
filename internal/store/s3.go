@@ -52,14 +52,21 @@ func (s *S3Store) GetScript(ctx context.Context, key string) ([]byte, error) {
 	return data, err
 }
 
-func (s *S3Store) ListScripts(ctx context.Context) (*s3.ListObjectsV2Output, error) {
+func (s *S3Store) ListScripts(ctx context.Context) ([]string, error) {
 	output, err := s.Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 		Bucket: aws.String(s.Bucket),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list objects: %w", err)
 	}
-	return output, nil
+
+	keys := make([]string, 0, len(output.Contents))
+	for _, obj := range output.Contents {
+		if obj.Key != nil {
+			keys = append(keys, *obj.Key)
+		}
+	}
+	return keys, nil
 }
 
 func (s *S3Store) Ping(ctx context.Context) error {

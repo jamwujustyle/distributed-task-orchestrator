@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 
-	"github.com/jamwujustyle/distributed-task-orchestrator/internal/store"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -11,7 +10,7 @@ import (
 )
 
 func (s *TaskService) UpdateTask(ctx context.Context, req *pb.UpdateTaskRequest) (*emptypb.Empty, error) {
-	err := s.dynamo.UpdateTask(ctx, req.Id, store.TaskStatus(req.Status))
+	err := s.dynamo.UpdateTask(ctx, req.Id, req.Status)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to update task status: %s", err)
 	}

@@ -17,7 +17,7 @@ func (s *TaskService) PollTasks(_ *emptypb.Empty, stream pb.TaskService_PollTask
 		err := stream.Send(&pb.Task{
 			Id:          t.ID,
 			ScriptS3Key: t.ScriptS3Key,
-			Status:      string(t.Status),
+			Status:      t.Status,
 		})
 		if err != nil {
 			return status.Errorf(codes.Internal, "failed to send task: %v", err)

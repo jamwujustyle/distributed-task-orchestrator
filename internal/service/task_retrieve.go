@@ -17,6 +17,6 @@ func (s *TaskService) RetrieveTask(ctx context.Context, req *pb.TaskId) (*pb.Tas
 	return &pb.Task{
 		Id:          t.ID,
 		ScriptS3Key: t.ScriptS3Key,
-		Status:      string(t.Status),
+		Status:      t.Status,
 	}, nil
 }
