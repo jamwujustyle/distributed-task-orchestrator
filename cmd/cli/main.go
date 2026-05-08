@@ -28,7 +28,7 @@ func main() {
 	c := pb.NewTaskServiceClient(conn)
 
 	if len(os.Args) < 2 {
-		slog.Error("usage: cli <command> [args]")
+		runREPL(ctx, c)
 		os.Exit(1)
 	}
 
