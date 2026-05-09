@@ -22,11 +22,10 @@ services:
   controller:
     build:
       context: .
-      network: host
     container_name: controller
     command: air -c .air.controller.toml
     ports:
-      - "8000:8000"
+      - "50051:50051"
     environment:
       AWS_ENDPOINT_URL: http://localstack:4566
       AWS_ACCESS_KEY_ID: test
@@ -53,11 +52,8 @@ services:
   worker:
     build:
       context: .
-      network: host
     container_name: worker
     command: air -c .air.worker.toml
-    ports:
-      - "8001:8001"
     environment:
       AWS_ENDPOINT_URL: http://localstack:4566
       AWS_ACCESS_KEY_ID: test
@@ -66,6 +62,8 @@ services:
     depends_on:
       localstack:
         condition: service_healthy
+      controller:
+        condition: service_started
     develop:
       watch:
         - action: sync

@@ -28,7 +28,7 @@ func main() {
 	c := pb.NewTaskServiceClient(conn)
 
 	if len(os.Args) < 2 {
-		runREPL(ctx, c)
+		runREPL(context.Background(), c)
 		os.Exit(1)
 	}
 

@@ -49,6 +49,7 @@ func main() {
 		slog.Error("could not listen", "err", err)
 		os.Exit(1)
 	}
+	slog.Info("gRPC listening", "addr", addr)
 
 	s := grpc.NewServer()
 	pb.RegisterTaskServiceServer(s, svc)

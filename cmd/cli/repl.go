@@ -13,7 +13,7 @@ import (
 
 func runREPL(ctx context.Context, c pb.TaskServiceClient) {
 	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Println("interactive mode. ommands: upload <path>, list, submit, <key>, retrieve <id>, exit")
+	fmt.Println("interactive mode. ommands: upload <path>, list, submit <key>, retrieve <id>, exit")
 
 	for {
 		fmt.Print("> ")
@@ -26,7 +26,7 @@ func runREPL(ctx context.Context, c pb.TaskServiceClient) {
 		}
 		switch parts[0] {
 		case "upload":
-			data, err := os.ReadFile(os.Args[2])
+			data, err := os.ReadFile(parts[1])
 			if err != nil {
 				slog.Error("failed to read file", "err", err)
 				continue
@@ -41,9 +41,19 @@ func runREPL(ctx context.Context, c pb.TaskServiceClient) {
 		case "list":
 			doListScripts(ctx, c)
 		case "submit":
-			doSubmitTask(ctx, c, os.Args[2])
+			if len(parts) < 2 {
+				slog.Info("usage: submit <id>")
+				continue
+			}
+			doSubmitTask(ctx, c, parts[1])
 		case "retrieve":
-			doRetrieveTask(ctx, c, os.Args[2])
+			if len(parts) < 2 {
+				slog.Info("usage: retrieve <id>")
+				continue
+			}
+			doRetrieveTask(ctx, c, parts[1])
+		case "exit":
+			return
 		default:
 			fmt.Println("unknown command")
 		}

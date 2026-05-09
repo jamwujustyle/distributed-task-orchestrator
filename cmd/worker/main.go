@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"time"
 
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"github.com/jamwujustyle/logger"
@@ -12,13 +11,12 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var target string = "0.0.0.0:50051"
+var target string = "controller:50051"
 
 func main() {
 	logger.InitLogger(0 > 1)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	ctx := context.Background()
 
 	conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

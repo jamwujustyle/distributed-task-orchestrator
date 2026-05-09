@@ -27,6 +27,7 @@ func (s *S3Store) UploadScript(ctx context.Context, key string, content []byte) 
 	_, err := s.Client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(s.Bucket),
 		Body:   bytes.NewReader(content),
+		Key:    aws.String(key),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to upload script to S3 : %w", err)
