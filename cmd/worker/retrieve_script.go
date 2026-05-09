@@ -8,13 +8,13 @@ import (
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 )
 
-func doRetrieveScript(ctx context.Context, c pb.TaskServiceClient, key string) error {
+func doRetrieveScript(ctx context.Context, c pb.TaskServiceClient, key string) ([]byte, error) {
 	s, err := c.RetrieveScript(ctx, &pb.ScriptKey{
 		Key: key,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to retrieve script, %w", err)
+		return nil, fmt.Errorf("failed to retrieve script, %w", err)
 	}
 	slog.Info("retrieved script successfully", "content", s.GetContent())
-	return nil
+	return s.Content, nil
 }

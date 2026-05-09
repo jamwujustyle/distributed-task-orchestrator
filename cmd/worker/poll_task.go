@@ -34,16 +34,14 @@ func doPollTasks(ctx context.Context, c pb.TaskServiceClient) {
 			continue
 		}
 
-		script, err := c.RetrieveScript(ctx, &pb.ScriptKey{
-			Key: t.ScriptS3Key,
-		})
+		script, err := doRetrieveScript(ctx, c, t.ScriptS3Key)
 		if err != nil {
 			slog.Error("error pulling script from s3", "task", t.GetId(), "key", t.GetScriptS3Key())
 			doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_FAILED)
 			continue
 		}
 
-		if err := engine.ExecuteScript(script.Content); err != nil {
+		if err := engine.ExecuteScript(script); err != nil {
 			slog.Error("script execution failed", "err", err)
 			doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_FAILED)
 			continue

@@ -6,8 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/jamwujustyle/distributed-task-orchestrator/internal/store"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"github.com/jamwujustyle/logger"
 	"google.golang.org/grpc"
@@ -27,8 +25,8 @@ func main() {
 		slog.Error("failed to create a client to", "target", target)
 		os.Exit(1)
 	}
-
 	defer conn.Close()
-	c := pb.NewTaskServiceClient(conn)
 
+	c := pb.NewTaskServiceClient(conn)
+	doPollTasks(ctx, c)
 }
