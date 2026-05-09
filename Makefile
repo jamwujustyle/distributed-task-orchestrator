@@ -17,9 +17,9 @@ cli:
 
 build:
 	@mkdir -p "$(BIN_DIR)"
-	go build -o "$(BIN_DIR)/controller $(CURDIR)/cmd/controller"
-	go build -o "$(BIN_DIR)/worker $(CURDIR)/cmd/worker"
-	go build -o "$(BIN_DIR)/cli $(CURDIR)/cmd/cli"
+	go build -o "$(BIN_DIR)/controller" "$(CURDIR)/cmd/controller"
+	go build -o "$(BIN_DIR)/worker" "$(CURDIR)/cmd/worker"
+	go build -o "$(BIN_DIR)/cli" "$(CURDIR)/cmd/cli"
 
 watch:
 	air
