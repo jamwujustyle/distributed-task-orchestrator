@@ -123,6 +123,7 @@ type Task struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	ScriptS3Key   string                 `protobuf:"bytes,2,opt,name=script_s3_key,json=scriptS3Key,proto3" json:"script_s3_key,omitempty"`
 	Status        TaskStatus             `protobuf:"varint,3,opt,name=status,proto3,enum=orchestrator.TaskStatus" json:"status,omitempty"`
+	Result        string                 `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -178,10 +179,18 @@ func (x *Task) GetStatus() TaskStatus {
 	return TaskStatus_PENDING
 }
 
+func (x *Task) GetResult() string {
+	if x != nil {
+		return x.Result
+	}
+	return ""
+}
+
 type UpdateTaskRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Status        TaskStatus             `protobuf:"varint,2,opt,name=status,proto3,enum=orchestrator.TaskStatus" json:"status,omitempty"`
+	Result        string                 `protobuf:"bytes,3,opt,name=result,proto3" json:"result,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -228,6 +237,13 @@ func (x *UpdateTaskRequest) GetStatus() TaskStatus {
 		return x.Status
 	}
 	return TaskStatus_PENDING
+}
+
+func (x *UpdateTaskRequest) GetResult() string {
+	if x != nil {
+		return x.Result
+	}
+	return ""
 }
 
 type Script struct {
@@ -324,14 +340,16 @@ const file_orchestrator_proto_rawDesc = "" +
 	"\n" +
 	"\x12orchestrator.proto\x12\forchestrator\x1a\x1bgoogle/protobuf/empty.proto\"\x18\n" +
 	"\x06TaskId\x12\x0e\n" +
-	"\x02ID\x18\x01 \x01(\tR\x02ID\"l\n" +
+	"\x02ID\x18\x01 \x01(\tR\x02ID\"\x84\x01\n" +
 	"\x04Task\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\"\n" +
 	"\rscript_s3_key\x18\x02 \x01(\tR\vscriptS3Key\x120\n" +
-	"\x06status\x18\x03 \x01(\x0e2\x18.orchestrator.TaskStatusR\x06status\"U\n" +
+	"\x06status\x18\x03 \x01(\x0e2\x18.orchestrator.TaskStatusR\x06status\x12\x16\n" +
+	"\x06result\x18\x04 \x01(\tR\x06result\"m\n" +
 	"\x11UpdateTaskRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x120\n" +
-	"\x06status\x18\x02 \x01(\x0e2\x18.orchestrator.TaskStatusR\x06status\"\"\n" +
+	"\x06status\x18\x02 \x01(\x0e2\x18.orchestrator.TaskStatusR\x06status\x12\x16\n" +
+	"\x06result\x18\x03 \x01(\tR\x06result\"\"\n" +
 	"\x06Script\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\fR\acontent\"\x1d\n" +
 	"\tScriptKey\x12\x10\n" +

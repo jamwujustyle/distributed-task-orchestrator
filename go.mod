@@ -13,6 +13,7 @@ require (
 	github.com/jamwujustyle/logger v0.0.0-20260501060744-242c2b40eadd
 	google.golang.org/grpc v1.81.0
 	google.golang.org/protobuf v1.36.11
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.90.1
 )
 
 require (
@@ -28,7 +29,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.11.23 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.23 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.23 // indirect
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.90.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.0.11 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.17 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.21 // indirect

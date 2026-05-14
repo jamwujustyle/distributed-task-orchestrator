@@ -33,7 +33,7 @@ func doPollTasks(ctx context.Context, c pb.TaskServiceClient, e *engine.Engine) 
 
 			slog.Info("received task", "id", t.GetId())
 
-			if err := doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_RUNNING); err != nil {
+			if err := doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_RUNNING, t.GetResult()); err != nil {
 				slog.Error("failed to update task to running", "err", err)
 				continue
 			}
@@ -41,16 +41,17 @@ func doPollTasks(ctx context.Context, c pb.TaskServiceClient, e *engine.Engine) 
 			script, err := doRetrieveScript(ctx, c, t.ScriptS3Key)
 			if err != nil {
 				slog.Error("error pulling script from s3", "task", t.GetId(), "key", t.GetScriptS3Key(), "err", err)
-				doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_FAILED)
+				doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_FAILED, t.GetResult())
 				continue
 			}
 
-			if err := e.ExecuteScript(ctx, script); err != nil {
+			r, err := e.ExecuteScript(ctx, script)
+			if err != nil {
 				slog.Error("script execution failed", "err", err)
-				doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_FAILED)
+				doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_FAILED, r)
 				continue
 			}
-			doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_COMPLETED)
+			doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_COMPLETED, r)
 		}
 	}
 }

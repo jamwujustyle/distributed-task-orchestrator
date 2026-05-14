@@ -15,6 +15,7 @@ type Task struct {
 	ID          string        `dynamodbav:"ID"`
 	ScriptS3Key string        `dynamodbav:"ScriptS3Key"`
 	Status      pb.TaskStatus `dynamodbav:"Status"`
+	Result      string        `dynamodbav:"Result"`
 	CreatedAt   int64         `dynamodbav:"CreatedAt"`
 	UpdatedAt   int64         `dynamodbav:"UpdatedAt"`
 }
@@ -76,7 +77,7 @@ func (d *DynamoStore) GetTask(ctx context.Context, id string) (*Task, error) {
 	return &t, nil
 }
 
-func (d *DynamoStore) UpdateTask(ctx context.Context, id string, status pb.TaskStatus) error {
+func (d *DynamoStore) UpdateTask(ctx context.Context, id string, status pb.TaskStatus, result string) error {
 	key, err := attributevalue.MarshalMap(map[string]string{"ID": id})
 	if err != nil {
 		return fmt.Errorf("failed to marshal key: %w", err)
@@ -85,6 +86,7 @@ func (d *DynamoStore) UpdateTask(ctx context.Context, id string, status pb.TaskS
 	values, err := attributevalue.MarshalMap(map[string]any{
 		":status":    status,
 		":updatedAt": time.Now().Unix(),
+		":output":    result,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to marshal status || updatedAt: %w", err)
@@ -93,9 +95,10 @@ func (d *DynamoStore) UpdateTask(ctx context.Context, id string, status pb.TaskS
 	_, err = d.Client.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName:        aws.String(d.Table),
 		Key:              key,
-		UpdateExpression: aws.String("SET #status = :status, UpdatedAt = :updatedAt"),
+		UpdateExpression: aws.String("SET #status = :status, UpdatedAt = :updatedAt, #res = :output"),
 		ExpressionAttributeNames: map[string]string{
 			"#status": "Status",
+			"#res":    "Result",
 		},
 		ExpressionAttributeValues: values,
 	})

@@ -10,7 +10,7 @@ import (
 )
 
 func (s *TaskService) UpdateTask(ctx context.Context, req *pb.UpdateTaskRequest) (*emptypb.Empty, error) {
-	err := s.dynamo.UpdateTask(ctx, req.Id, req.Status)
+	err := s.dynamo.UpdateTask(ctx, req.Id, req.Status, req.Result)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to update task status: %s", err)
 	}

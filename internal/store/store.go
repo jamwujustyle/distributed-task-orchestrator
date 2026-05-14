@@ -9,7 +9,7 @@ import (
 type TaskStore interface {
 	SaveTask(ctx context.Context, task Task) error
 	GetTask(ctx context.Context, id string) (*Task, error)
-	UpdateTask(ctx context.Context, id string, status pb.TaskStatus) error
+	UpdateTask(ctx context.Context, id string, status pb.TaskStatus, result string) error
 	GetPendingTasks(ctx context.Context) ([]Task, error)
 }
 type ArtifactStore interface {
