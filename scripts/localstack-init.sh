@@ -16,4 +16,15 @@ awslocal dynamodb create-table \
     --billing-mode PAY_PER_REQUEST \
     --region $REGION
 
+
+cd /app/bin && cp task-executor bootstrap && zip task-executor.zip bootstrap
+echo "creating lambda function"
+awslocal lambda create-function \
+    --function-name task-executor \
+    --runtime provided.al2 \
+    --handler bootstrap \
+    --role arn:aws:iam::000000000000:role/lambda-role \
+    --zip-file fileb:///app/bin/task-executor.zip \
+    --region $REGION
+
 echo "localstack initialized"

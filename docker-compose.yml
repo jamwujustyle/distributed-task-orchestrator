@@ -5,9 +5,14 @@ services:
     ports:
       - "4566:4566"
     environment:
-      SERVICES: s3,dynamodb
+      SERVICES: s3,dynamodb,lambda
+      LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT: 30
+      LAMBDA_INIT_USER: root
+      DEBUG: 1
     volumes:
       - ./scripts/localstack-init.sh:/etc/localstack/init/ready.d/init.sh
+      - lambda-bin:/app/bin
+      - /var/run/docker.sock:/var/run/docker.sock
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 5s
@@ -26,6 +31,8 @@ services:
     command: air -c .air.controller.toml
     ports:
       - "50051:50051"
+    volumes:
+      - lambda-bin:/app/bin
     environment:
       AWS_ENDPOINT_URL: http://localstack:4566
       AWS_ACCESS_KEY_ID: test
@@ -78,3 +85,6 @@ services:
           path: go.mod
         - action: rebuild
           path: go.sum
+
+volumes:
+  lambda-bin:

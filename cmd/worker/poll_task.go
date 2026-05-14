@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func doPollTasks(ctx context.Context, c pb.TaskServiceClient) {
+func doPollTasks(ctx context.Context, c pb.TaskServiceClient, e *engine.Engine) {
 	for {
 		stream, err := c.PollTasks(ctx, &emptypb.Empty{})
 		if err != nil {
@@ -19,12 +19,12 @@ func doPollTasks(ctx context.Context, c pb.TaskServiceClient) {
 			time.Sleep(5 * time.Second)
 			continue
 		}
-
 		for {
 			t, err := stream.Recv()
 			if err == io.EOF {
 				slog.Info("no more pending tasks")
-				return
+				time.Sleep(5 * time.Second)
+				break
 			}
 			if err != nil {
 				slog.Error("failed to stream, retrying poll", "err", err)
@@ -45,7 +45,7 @@ func doPollTasks(ctx context.Context, c pb.TaskServiceClient) {
 				continue
 			}
 
-			if err := engine.ExecuteScript(script); err != nil {
+			if err := e.ExecuteScript(ctx, script); err != nil {
 				slog.Error("script execution failed", "err", err)
 				doUpdateTask(ctx, c, t.GetId(), pb.TaskStatus_FAILED)
 				continue
