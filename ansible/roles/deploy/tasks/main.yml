@@ -8,4 +8,4 @@
   community.docker.docker_compose_v2:
     project_src: /vagrant
     state: present
-    build: always
+    pull: always
