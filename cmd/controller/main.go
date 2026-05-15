@@ -26,17 +26,29 @@ func main() {
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
 	if err != nil {
 		slog.Error("failed to load aws config", "err", err)
-		os.Exit(1)
+	}
+	var dbStore *store.DynamoStore
+	var s3Store *store.S3Store
+	ready := false
+
+	for range 3 {
+		dbStore = store.NewDynamoStore(cfg, "TaskTable")
+		s3Store = store.NewS3Store(cfg, "tasks-bucket")
+
+		dbErr := dbStore.Ping(ctx)
+		s3Err := s3Store.Ping(ctx)
+
+		if dbErr == nil && s3Err == nil {
+			ready = true
+			break
+		}
+
+		time.Sleep(5 * time.Second)
+		slog.Info("sleeping 5 sec before retry..")
 	}
 
-	dbStore := store.NewDynamoStore(cfg, "TaskTable")
-	if err := dbStore.Ping(ctx); err != nil {
-		slog.Error("DynamoDB storage offline", "err", err)
-		os.Exit(1)
-	}
-	s3Store := store.NewS3Store(cfg, "tasks-bucket")
-	if err := s3Store.Ping(ctx); err != nil {
-		slog.Error("S3 storage offline", "err", err)
+	if !ready {
+		slog.Error("attempts exhausted. exiting program")
 		os.Exit(1)
 	}
 
@@ -47,16 +59,14 @@ func main() {
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		slog.Error("could not listen", "err", err)
-		os.Exit(1)
 	}
 	slog.Info("gRPC listening", "addr", addr)
 
 	s := grpc.NewServer()
 	pb.RegisterTaskServiceServer(s, svc)
 
-	if err := s.Serve(lis); err != nil {
+	if err = s.Serve(lis); err != nil {
 		slog.Error("gRPC Failed to serve", "err", err)
-		os.Exit(1)
 	}
-
+	time.Sleep(5 * time.Second)
 }
