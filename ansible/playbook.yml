@@ -1,0 +1,8 @@
+---
+- name: Provision server
+  hosts: servers
+  become: yes
+
+  roles:
+    - docker
+    - deploy

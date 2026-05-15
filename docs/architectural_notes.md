@@ -30,3 +30,18 @@ Add Ansible playbooks to automate deployment
 Migrate to EKS (managed K8s on AWS)
 ↓
 Add Kafka for task queue instead of gRPC polling
+
+Next options:
+
+Kafka — replace gRPC polling with event-driven task queue. Worker subscribes to a topic, controller publishes when task is submitted.
+Ansible — write playbooks to provision and deploy your stack to a real server.
+Observability — add metrics/tracing with OpenTelemetry.
+Tests — write integration tests for the service layer.
+
+Given your roadmap you wrote earlier:
+Finish app ✓
+Deploy to AWS
+Add Ansible
+Migrate to EKS
+Add Kafka
+Ansible is next. But Kafka is more technically interesting and directly changes the architecture. Your call.

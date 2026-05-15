@@ -33,3 +33,10 @@ proto:
 	-I/usr/include \
 	--proto_path="$(PROTO_DIR)" \
 	"$(PROTO_DIR)/orchestrator.proto"
+
+
+image_build:
+	docker build -t codebuddha/orchestrator:latest .
+image_push:
+	docker push codebuddha/orchestrator:latest
+

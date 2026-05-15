@@ -1,0 +1,11 @@
+---
+- name: Install docker compose plugin dependency
+  pip:
+    name: docker
+    state: present
+
+- name: Pull and start containers
+  community.docker.docker_compose_v2:
+    project_src: /vagrant
+    state: present
+    build: always

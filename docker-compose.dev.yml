@@ -1,5 +1,4 @@
 name: orchestrator
-
 services:
   localstack:
     image: localstack/localstack:3
@@ -27,9 +26,11 @@ services:
         max-size: "2m"
         max-file: "3"
   controller:
-    image: codebuddha/orchestrator:latest
-    command: /app/bin/controller
     container_name: controller
+    build:
+      context: .
+      target: dev
+    command: air -c .air.controller.toml
     ports:
       - "50051:50051"
     volumes:
@@ -42,10 +43,27 @@ services:
     depends_on:
       localstack:
         condition: service_healthy
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - bin/
+            - .git/
+            - tmp/
+            - "**/*_test.go"
+        - action: rebuild
+          path: go.sum
+        - action: rebuild
+          path: go.mod
+
   worker:
-    image: codebuddha/orchestrator:latest
-    command: /app/bin/worker
     container_name: worker
+    build:
+      context: .
+      target: dev
+    command: air -c .air.worker.toml
     environment:
       AWS_ENDPOINT_URL: http://localstack:4566
       AWS_ACCESS_KEY_ID: test
@@ -56,7 +74,20 @@ services:
         condition: service_healthy
       controller:
         condition: service_started
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - bin/
+            - tmp/
+            - .git/
+            - "**/*_test.go"
+        - action: rebuild
+          path: go.mod
+        - action: rebuild
+          path: go.sum
 
 volumes:
   lambda-bin:
-
