@@ -36,3 +36,6 @@ image_build:
 image_push:
 	docker push codebuddha/orchestrator:latest
 
+
+start:
+	docker compose -f docker-compose.dev.yml up --build
