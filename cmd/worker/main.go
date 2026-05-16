@@ -11,9 +11,15 @@ import (
 	"github.com/jamwujustyle/distributed-task-orchestrator/cmd/worker/engine"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"github.com/jamwujustyle/logger"
+	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
+
+type TaskEnvelope struct {
+	Msg  kafka.Message
+	Task *pb.Task
+}
 
 var target string = "controller:50051"
 
@@ -39,21 +45,36 @@ func main() {
 	cons := consumer.NewConsumer([]string{"kafka:29092"}, "tasks", "worker-group")
 	defer cons.Close()
 
+	// TODO: BUFFER SIZE CONCEPT TO BE STUDIED
+	tasksChan := make(chan TaskEnvelope, 100)
+
+	for i := range 5 {
+		go worker(ctx, i, c, e, cons, tasksChan)
+	}
+
 	for {
 		msg, task, err := cons.FetchTask(ctx)
 		if err != nil {
-			slog.Error("failed to fetch tasks", "err", err)
+			slog.Error("fetch failed", "err", err)
 			continue
 		}
-		slog.Info("received task from kafka", "id", task.GetId())
 
-		err = client.RunTaskLifecycle(ctx, c, e, task)
-		if err == nil {
-			cons.Commit(ctx, msg)
-			slog.Info("task finished and commited", "id", task.GetId())
-		} else {
-			slog.Error("task execution failed", "id", task.GetId())
+		tasksChan <- TaskEnvelope{
+			Msg:  msg,
+			Task: task,
 		}
 	}
 
+}
+
+func worker(ctx context.Context, id int, c pb.TaskServiceClient, e *engine.Engine, cons *consumer.TaskConsumer, tasks <-chan TaskEnvelope) {
+	for env := range tasks {
+		err := client.RunTaskLifecycle(ctx, c, e, env.Task)
+		if err == nil {
+			cons.Commit(ctx, env.Msg)
+			slog.Info("task commited", "worker", id, "task", env.Task.GetId())
+		} else {
+			slog.Error("task failed", "worker", id, "task", env.Task.GetId())
+		}
+	}
 }
