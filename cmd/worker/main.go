@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/jamwujustyle/distributed-task-orchestrator/cmd/worker/client"
+	"github.com/jamwujustyle/distributed-task-orchestrator/cmd/worker/consumer"
 	"github.com/jamwujustyle/distributed-task-orchestrator/cmd/worker/engine"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"github.com/jamwujustyle/logger"
@@ -35,5 +36,24 @@ func main() {
 
 	e := engine.NewEngine(cfg, "task-executor")
 	c := pb.NewTaskServiceClient(conn)
-	client.DoPollTasks(ctx, c, e)
+	cons := consumer.NewConsumer([]string{"kafka:29092"}, "tasks", "worker-group")
+	defer cons.Close()
+
+	for {
+		msg, task, err := cons.FetchTask(ctx)
+		if err != nil {
+			slog.Error("failed to fetch tasks", "err", err)
+			continue
+		}
+		slog.Info("received task from kafka", "id", task.GetId())
+
+		err = client.RunTaskLifecycle(ctx, c, e, task)
+		if err == nil {
+			cons.Commit(ctx, msg)
+			slog.Info("task finished and commited", "id", task.GetId())
+		} else {
+			slog.Error("task execution failed", "id", task.GetId())
+		}
+	}
+
 }

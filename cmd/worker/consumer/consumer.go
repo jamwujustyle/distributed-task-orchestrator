@@ -40,3 +40,7 @@ func (c *TaskConsumer) FetchTask(ctx context.Context) (kafka.Message, *pb.Task, 
 func (c *TaskConsumer) Commit(ctx context.Context, msg kafka.Message) error {
 	return c.consumer.CommitMessages(ctx, msg)
 }
+
+func (c *TaskConsumer) Close() error {
+	return c.consumer.Close()
+}
