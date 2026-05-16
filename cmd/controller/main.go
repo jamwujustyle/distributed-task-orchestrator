@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/jamwujustyle/distributed-task-orchestrator/internal/queue"
 	"github.com/jamwujustyle/distributed-task-orchestrator/internal/service"
 	"github.com/jamwujustyle/distributed-task-orchestrator/internal/store"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
@@ -29,6 +30,9 @@ func main() {
 	}
 	var dbStore *store.DynamoStore
 	var s3Store *store.S3Store
+	producer := queue.NewTaskProducer([]string{"kafka:29092"}, "tasks")
+	defer producer.Close()
+
 	ready := false
 
 	for range 3 {
@@ -52,7 +56,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	svc := service.NewTaskService(dbStore, s3Store)
+	svc := service.NewTaskService(dbStore, s3Store, producer)
 
 	slog.Info("Storage layer verified", "provider", "LocalStack", "server", "controller")
 

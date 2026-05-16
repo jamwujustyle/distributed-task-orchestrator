@@ -21,5 +21,10 @@ func (s *TaskService) SubmitTask(ctx context.Context, req *pb.Task) (*pb.TaskId,
 		return nil, status.Errorf(codes.Internal, "unable to save task: %v", err)
 	}
 
+	err := s.producer.PublishTask(ctx, req)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to publish task: %v", err)
+	}
+
 	return &pb.TaskId{ID: t.ID}, nil
 }
