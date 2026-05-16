@@ -1,17 +1,17 @@
-package main
+package client
 
 import (
 	"context"
+	"github.com/jamwujustyle/distributed-task-orchestrator/cmd/worker/engine"
 	"io"
 	"log/slog"
 	"time"
 
-	"github.com/jamwujustyle/distributed-task-orchestrator/internal/engine"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func doPollTasks(ctx context.Context, c pb.TaskServiceClient, e *engine.Engine) {
+func DoPollTasks(ctx context.Context, c pb.TaskServiceClient, e *engine.Engine) {
 	for {
 		stream, err := c.PollTasks(ctx, &emptypb.Empty{})
 		if err != nil {

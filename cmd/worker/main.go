@@ -6,7 +6,8 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/jamwujustyle/distributed-task-orchestrator/internal/engine"
+	"github.com/jamwujustyle/distributed-task-orchestrator/cmd/worker/client"
+	"github.com/jamwujustyle/distributed-task-orchestrator/cmd/worker/engine"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"github.com/jamwujustyle/logger"
 	"google.golang.org/grpc"
@@ -34,5 +35,5 @@ func main() {
 
 	e := engine.NewEngine(cfg, "task-executor")
 	c := pb.NewTaskServiceClient(conn)
-	doPollTasks(ctx, c, e)
+	client.DoPollTasks(ctx, c, e)
 }
