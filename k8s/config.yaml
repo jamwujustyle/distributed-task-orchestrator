@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orchestrator-config
+data:
+  KAFKA_BROKERS: "kafka:9092"
+  CONTROLLER_ADDR: "controller:50051"
+  AWS_REGION: "us-east-1"
+  AWS_ENDPOINT_URL: "http://localstack:4566"

@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+      - name: worker
+        image: codebuddha/orchestrator:latest
+        command: ["/app/bin/worker"]
+
+        envFrom:
+        - configMapRef:
+            name: orchestrator-config
+        - secretRef:
+            name: aws-credentials

@@ -1,0 +1,26 @@
+apiVersion: app/v1
+kind: Deployment
+metadata:
+  name: controller-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: controller
+  template:
+    metadata:
+      labels:
+        app: controller
+    spec:
+      containers:
+      - name: controller
+        image: codebuddha/orchestrator:latest
+        command: ["/app/bin/controller"]
+        ports:
+        - containerPort: 50051
+
+        envFrom:
+        - configMapRef:
+            name: orchestrator-config
+        - secretRef:
+            name: aws-credentials
