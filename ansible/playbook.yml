@@ -4,6 +4,6 @@
   become: yes
 
   roles:
-    - docker
-    - deploy
+    # - docker
+    # - deploy
     - k3s

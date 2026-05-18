@@ -1,8 +1,8 @@
 ---
 - name: Download and install K3s
-  shell: curl -sfL https://get.k3s.io | sh -
-  args:
-    creates: /usr/local/bin/k3s
+  shell: curl -sfL https://get.k3s.io | sh -s - --tls-san 192.168.56.10
+  # args:
+    # creates: /usr/local/bin/k3s
 
 - name: Fetch the K3s config file for my host machine
   fetch:

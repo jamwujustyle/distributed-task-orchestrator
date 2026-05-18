@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localstack-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localstack
+  template:
+    metadata:
+      labels:
+        app: localstack
+    spec:
+      initContainers:
+        - name: lambda-extractor
+          image: codebuddha/orchestrator:latest
+          command: ["cp", "/app/lambda/bootstrap", "/shared-lambda/bootstrap"]
+          volumeMounts:
+            - name: shared-lambda-dir
+              mountPath: /shared-lambda
+
+      containers:
+        - name: localstack
+          image: localstack/localstack:3
+          ports:
+            - containerPort: 4566
+          env:
+            - name: SERVICES
+              value: "s3,dynamodb,lambda"
+            - name: LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT
+              value: "30"
+            - name: LAMBDA_INIT_USER
+              value: "root"
+          volumeMounts:
+            - name: shared-lambda-dir
+              mountPath: /app/lambda
+            - name: init-script
+              mountPath: /etc/localstack/init/ready.d/init.sh
+              subPath: init.sh
+      volumes:
+        - name: shared-lambda-dir
+          emptyDir: {}
+
+        - name: init-script
+          configMap:
+            name: localstack-init-config
+            defaultMode: 0755
