@@ -1,0 +1,19 @@
+---
+- name: Download and install K3s
+  shell: curl -sfL https://get.k3s.io | sh -
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Fetch the K3s config file for my host machine
+  fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: ~/.kube/config
+    flat: yes
+
+- name: Update the K8s config IP address
+  delegate_to: localhost
+  become: no
+  replace:
+    path: ~/.kube/config
+    regexp: '127\.0\.0\.1'
+    replace: '192.168.56.10'

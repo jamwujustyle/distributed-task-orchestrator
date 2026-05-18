@@ -6,3 +6,4 @@
   roles:
     - docker
     - deploy
+    - k3s
