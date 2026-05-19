@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/jamwujustyle/distributed-task-orchestrator/cmd/worker/client"
@@ -60,6 +61,7 @@ func main() {
 		msg, task, err := cons.FetchTask(ctx)
 		if err != nil {
 			slog.Error("fetch failed", "err", err)
+			time.Sleep(5 * time.Second)
 			continue
 		}
 
