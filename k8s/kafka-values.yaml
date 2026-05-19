@@ -1,0 +1,18 @@
+controller:
+  replicaCount: 1
+
+zookeeper:
+  enabled: false
+
+kraftVersion: 0
+
+persistence:
+  enabled: false
+
+image:
+  repository: bitnamilegacy/kafka
+  tag: "3.8.0"
+
+auth:
+  clientProtocol: plaintext
+  interBrokerProtocol: plaintext

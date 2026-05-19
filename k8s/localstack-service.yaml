@@ -2,7 +2,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: localstack
-ports:
-  - protocol: TCP
-    port: 4566
-    targetPort: 4566
+spec:
+  selector:
+    app: localstack
+  ports:
+    - protocol: TCP
+      port: 4566
+      targetPort: 4566

@@ -1,6 +1,6 @@
 ---
 - name: Install K3s on master
-  shell: curl -sfL https://get.k3s.io | sh -s - --tls-san 192.168.56.10
+  shell: curl -sfL https://get.k3s.io | sh -s - --tls-san 192.168.56.10 --node-ip 192.168.56.10
   when: inventory_hostname in groups['master']
 
 - name: Retrieve K3s token from master
@@ -13,7 +13,7 @@
     curl -sfL https://get.k3s.io | \
     K3S_URL="https://192.168.56.10:6443" \
     K3S_TOKEN="{{ hostvars[groups['master'][0]]['master_token']['stdout'] }}" \
-    sh -
+    sh -s - --node-ip 192.168.56.11
   when: inventory_hostname in groups['workers']
 
 - name: Fetch the K3s config file for my host machine
