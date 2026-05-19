@@ -39,3 +39,12 @@ image_push:
 
 start:
 	docker compose -f docker-compose.dev.yml up --build
+
+
+kubeapply:
+	kubectl apply -f k8s/config.yaml \
+				  -f k8s/secret.yaml \
+				  -f k8s/controller-deployment.yaml \
+				  -f k8s/controller-service.yaml \
+				  -f k8s/worker-deployment.yaml
+
