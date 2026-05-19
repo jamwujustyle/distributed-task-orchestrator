@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,8 +28,12 @@ type DynamoStore struct {
 
 func NewDynamoStore(cfg aws.Config, tableName string) *DynamoStore {
 	return &DynamoStore{
-		Client: dynamodb.NewFromConfig(cfg),
-		Table:  tableName,
+		Client: dynamodb.NewFromConfig(cfg, func(o *dynamodb.Options) {
+			if ep := os.Getenv("AWS_ENDPOINT_URL"); ep != "" {
+				o.BaseEndpoint = aws.String(ep)
+			}
+		}),
+		Table: tableName,
 	}
 }
 

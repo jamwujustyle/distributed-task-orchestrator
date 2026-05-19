@@ -42,7 +42,10 @@ start:
 
 
 kubeapply:
-	kubectl apply -f k8s/config.yaml \
+	kubectl apply -f k8s/localstack-init-config.yaml \
+				  -f k8s/localstack-service.yaml \
+				  -f k8s/localstack-deployment.yaml \
+				  -f k8s/config.yaml \
 				  -f k8s/secret.yaml \
 				  -f k8s/controller-deployment.yaml \
 				  -f k8s/controller-service.yaml \

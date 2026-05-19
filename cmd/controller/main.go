@@ -21,8 +21,7 @@ var addr string = "0.0.0.0:50051"
 func main() {
 	logger.InitLogger(0 > 1)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	ctx := context.Background()
 
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
 	if err != nil {
@@ -30,7 +29,11 @@ func main() {
 	}
 	var dbStore *store.DynamoStore
 	var s3Store *store.S3Store
-	producer := queue.NewTaskProducer([]string{"kafka:29092"}, "tasks")
+	brokers := os.Getenv("KAFKA_BROKERS")
+	if brokers == "" {
+		brokers = "kafka:9092"
+	}
+	producer := queue.NewTaskProducer([]string{brokers}, "tasks")
 	defer producer.Close()
 
 	ready := false
@@ -46,7 +49,9 @@ func main() {
 			ready = true
 			break
 		}
-
+		if dbErr != nil || s3Err != nil {
+			slog.Error("ping failed", "dbErr", dbErr, "s3Err", s3Err)
+		}
 		time.Sleep(5 * time.Second)
 		slog.Info("sleeping 5 sec before retry..")
 	}

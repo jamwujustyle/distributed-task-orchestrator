@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -19,6 +20,9 @@ func NewS3Store(cfg aws.Config, bucketName string) *S3Store {
 	return &S3Store{
 		Client: s3.NewFromConfig(cfg, func(o *s3.Options) {
 			o.UsePathStyle = true
+			if ep := os.Getenv("AWS_ENDPOINT_URL"); ep != "" {
+				o.BaseEndpoint = aws.String(ep)
+			}
 		}),
 		Bucket: bucketName,
 	}

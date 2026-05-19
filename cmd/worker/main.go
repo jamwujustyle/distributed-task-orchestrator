@@ -42,10 +42,14 @@ func main() {
 
 	e := engine.NewEngine(cfg, "task-executor")
 	c := pb.NewTaskServiceClient(conn)
-	cons := consumer.NewConsumer([]string{"kafka:29092"}, "tasks", "worker-group")
+
+	brokers := os.Getenv("KAFKA_BROKERS")
+	if brokers == "" {
+		brokers = "kafka:9092"
+	}
+	cons := consumer.NewConsumer([]string{brokers}, "tasks", "worker-group")
 	defer cons.Close()
 
-	// TODO: BUFFER SIZE CONCEPT TO BE STUDIED
 	tasksChan := make(chan TaskEnvelope, 100)
 
 	for i := range 5 {

@@ -37,6 +37,7 @@ services:
       - lambda-bin:/app/lambda
     environment:
       AWS_ENDPOINT_URL: http://localstack:4566
+      KAFKA_BROKERS: "kafka:29092"
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       AWS_REGION: us-east-1
@@ -68,6 +69,7 @@ services:
     command: air -c .air.worker.toml
     environment:
       AWS_ENDPOINT_URL: http://localstack:4566
+      KAFKA_BROKERS: "kafka:29092"
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       AWS_REGION: us-east-1
