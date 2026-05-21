@@ -41,7 +41,33 @@ Tests — write integration tests for the service layer.
 Given your roadmap you wrote earlier:
 Finish app ✓
 Deploy to AWS
-Add Ansible
-Migrate to EKS
-Add Kafka
-Ansible is next. But Kafka is more technically interesting and directly changes the architecture. Your call.
+Add Ansible ✓
+Migrate to EKS ✓ (K3s clustering on Vagrant VMs)
+Add Kafka ✓
+
+### Current State of the Architecture (As of May 2026)
+* **Event-Driven Messaging:** Successfully migrated from gRPC polling to Kafka. The controller acts as a producer to the `tasks` topic, and workers consume messages from it.
+* **Kubernetes (K3s):** Shifted infrastructure deployment from Docker Compose to a K3s cluster. Deployments are orchestrated across a multi-node Vagrant VM environment.
+* **Ansible Infrastructure Provisioning:** Ansible playbooks automate the setup of the VM dependencies, Docker, and K3s node clustering.
+* **Centralized Logging:** Deployed `loki-stack` (Loki, Promtail, and Grafana) to the Kubernetes cluster. Promtail automatically scrapes stdout/stderr logs from all running pods.
+
+### Next Steps & Backlog
+
+#### 1. Observability: Metrics & Monitoring
+* **Problem:** We have centralized logs, but zero visibility into metrics.
+* **Solution:**
+  * Instrument the Go controller and worker codebases with Prometheus metrics (e.g., tracking task count, execution latency, processing rates).
+  * Deploy a Prometheus server inside the K3s cluster to scrape metrics endpoints.
+  * Construct Grafana dashboards combining Loki logs and Prometheus metrics.
+
+#### 2. Distributed Tracing (OpenTelemetry)
+* **Problem:** Tracking a single task's flow across CLI -> Controller -> Kafka -> Worker -> Lambda -> DynamoDB is difficult when diagnosing failure bottlenecks.
+* **Solution:** Implement context propagation using OpenTelemetry trace spans across the gRPC and Kafka network boundaries.
+
+#### 3. Lambda script execution Sandboxing
+* **Problem:** Workers invoke AWS Lambda functions executing raw bash scripts without validation, which poses security risks.
+* **Solution:** Apply command whitelisting, configure memory/CPU constraints, and namespace executions.
+
+#### 4. Integration Tests
+* **Problem:** End-to-end task flows rely on manual testing via the CLI.
+* **Solution:** Create integration test suites to simulate and assert task lifecycle flows (Kafka publishing, LocalStack execution, S3 storage, and DynamoDB updates).
