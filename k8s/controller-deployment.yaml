@@ -11,6 +11,9 @@ spec:
     metadata:
       labels:
         app: controller
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9091"
     spec:
       containers:
       - name: controller
@@ -18,7 +21,8 @@ spec:
         command: ["/app/bin/controller"]
         ports:
         - containerPort: 50051
-
+        - containerPort: 9091
+          name: metrics
         envFrom:
         - configMapRef:
             name: orchestrator-config

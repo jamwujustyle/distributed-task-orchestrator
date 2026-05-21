@@ -11,11 +11,17 @@ spec:
     metadata:
       labels:
         app: worker
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9091"
     spec:
       containers:
       - name: worker
         image: codebuddha/orchestrator:latest
         command: ["/app/bin/worker"]
+        ports:
+          - containerPort: 9091
+            name: metrics
 
         envFrom:
         - configMapRef:
