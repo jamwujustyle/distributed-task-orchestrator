@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
 		master.vm.hostname = "k3s-master"
 		master.vm.network "private_network", ip: "192.168.56.10"
 		master.vm.provider "virtualbox" do |vb|
-		vb.memory = "2048"
+		vb.memory = "3072"
 		vb.cpus = 2
 		end
 	end

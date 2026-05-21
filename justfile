@@ -51,3 +51,6 @@ kubeapply:
 				  -f k8s/controller-service.yaml \
 				  -f k8s/worker-deployment.yaml
 
+
+provision:
+	cd ansible && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini playbook.yaml

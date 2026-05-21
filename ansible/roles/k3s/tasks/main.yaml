@@ -31,3 +31,50 @@
     regexp: '127\.0\.0\.1'
     replace: '192.168.56.10'
   when: inventory_hostname in groups['master']
+
+- name: Install Helm on master VM
+  shell: |
+    curl -fsSl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  args:
+    creates: /usr/local/bin/helm
+  when: inventory_hostname in groups['master']
+
+- name: Add Helm chart repos
+  shell: |
+    helm repo add bitnami https://charts.bitnami.com/bitnami
+    helm repo add grafana https://grafana.github.io/helm-charts
+    helm repo update
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  when: inventory_hostname in groups['master']
+
+- name: Deploy kafka using helm
+  shell: |
+    helm upgrade --install kafka bitnami/kafka \
+    -f /vagrant/k8s/kafka-values.yaml
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  when: inventory_hostname in groups['master']
+
+- name: deploy loki stack (loki | promtail | grafana)
+  shell: |
+    helm upgrade --install loki grafana/loki-stack \
+    --set grafana.enabled=true,promtail.enabled=true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  when: inventory_hostname in groups['master']
+
+- name: deploy orchestrator application manifests
+  shell: |
+    kubectl apply \
+      -f /vagrant/k8s/localstack-init-config.yaml \
+      -f /vagrant/k8s/localstack-service.yaml \
+      -f /vagrant/k8s/localstack-deployment.yaml \
+      -f /vagrant/k8s/config.yaml \
+      -f /vagrant/k8s/secret.yaml \
+      -f /vagrant/k8s/controller-deployment.yaml \
+      -f /vagrant/k8s/controller-service.yaml \
+      -f /vagrant/k8s/worker-deployment.yaml
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  when: inventory_hostname in groups['master']
