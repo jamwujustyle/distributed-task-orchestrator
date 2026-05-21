@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/jamwujustyle/distributed-task-orchestrator/internal/store"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"github.com/jamwujustyle/logger"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 )
 
@@ -70,6 +72,14 @@ func main() {
 		slog.Error("could not listen", "err", err)
 	}
 	slog.Info("gRPC listening", "addr", addr)
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		slog.Info("metrics server listening", "addr", ":9091")
+		if err := http.ListenAndServe(":9091", nil); err != nil {
+			slog.Error("metrics server failed", "err", err)
+		}
+	}()
 
 	s := grpc.NewServer()
 	pb.RegisterTaskServiceServer(s, svc)

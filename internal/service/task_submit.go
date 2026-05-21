@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jamwujustyle/distributed-task-orchestrator/internal/store"
+	"github.com/jamwujustyle/distributed-task-orchestrator/pkg/metrics"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,8 +27,9 @@ func (s *TaskService) SubmitTask(ctx context.Context, req *pb.Task) (*pb.TaskId,
 
 	err := s.producer.PublishTask(ctx, req)
 	if err != nil {
+		metrics.TasksPublishErrors.Inc()
 		return nil, status.Errorf(codes.Internal, "failed to publish task: %v", err)
 	}
-
+	metrics.TasksSubmitted.Inc()
 	return &pb.TaskId{ID: t.ID}, nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/jamwujustyle/distributed-task-orchestrator/cmd/worker/engine"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"github.com/jamwujustyle/logger"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -56,6 +58,14 @@ func main() {
 	for i := range 5 {
 		go worker(ctx, i, c, e, cons, tasksChan)
 	}
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		slog.Info("metrics server listening", "addr", ":9091")
+		if err := http.ListenAndServe(":9091", nil); err != nil {
+			slog.Error("metrics server failed", "err", err)
+		}
+	}()
 
 	for {
 		msg, task, err := cons.FetchTask(ctx)
