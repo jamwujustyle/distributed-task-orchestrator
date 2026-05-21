@@ -50,24 +50,18 @@ Add Kafka ✓
 * **Kubernetes (K3s):** Shifted infrastructure deployment from Docker Compose to a K3s cluster. Deployments are orchestrated across a multi-node Vagrant VM environment.
 * **Ansible Infrastructure Provisioning:** Ansible playbooks automate the setup of the VM dependencies, Docker, and K3s node clustering.
 * **Centralized Logging:** Deployed `loki-stack` (Loki, Promtail, and Grafana) to the Kubernetes cluster. Promtail automatically scrapes stdout/stderr logs from all running pods.
+* **Distributed Observability (Metrics & Monitoring):** Instrumented Go controller and worker codebases to serve Prometheus metrics (tracking tasks submitted, tasks processed, and task execution durations) on port `9091`. Deployed Prometheus server using Ansible Helm automation, enabling real-time metrics dashboards in Grafana.
 
 ### Next Steps & Backlog
 
-#### 1. Observability: Metrics & Monitoring
-* **Problem:** We have centralized logs, but zero visibility into metrics.
-* **Solution:**
-  * Instrument the Go controller and worker codebases with Prometheus metrics (e.g., tracking task count, execution latency, processing rates).
-  * Deploy a Prometheus server inside the K3s cluster to scrape metrics endpoints.
-  * Construct Grafana dashboards combining Loki logs and Prometheus metrics.
-
-#### 2. Distributed Tracing (OpenTelemetry)
+#### 1. Distributed Tracing (OpenTelemetry)
 * **Problem:** Tracking a single task's flow across CLI -> Controller -> Kafka -> Worker -> Lambda -> DynamoDB is difficult when diagnosing failure bottlenecks.
 * **Solution:** Implement context propagation using OpenTelemetry trace spans across the gRPC and Kafka network boundaries.
 
-#### 3. Lambda script execution Sandboxing
+#### 2. Lambda script execution Sandboxing
 * **Problem:** Workers invoke AWS Lambda functions executing raw bash scripts without validation, which poses security risks.
 * **Solution:** Apply command whitelisting, configure memory/CPU constraints, and namespace executions.
 
-#### 4. Integration Tests
+#### 3. Integration Tests
 * **Problem:** End-to-end task flows rely on manual testing via the CLI.
 * **Solution:** Create integration test suites to simulate and assert task lifecycle flows (Kafka publishing, LocalStack execution, S3 storage, and DynamoDB updates).
