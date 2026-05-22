@@ -21,7 +21,7 @@ cd /app/lambda && zip task-executor.zip bootstrap
 echo "creating lambda function"
 awslocal lambda create-function \
     --function-name task-executor \
-    --runtime provided.al2 \
+    --runtime go1.x \
     --handler bootstrap \
     --role arn:aws:iam::000000000000:role/lambda-role \
     --zip-file fileb:///app/lambda/task-executor.zip \

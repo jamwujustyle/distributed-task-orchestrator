@@ -1,8 +1,8 @@
 package main
 
 import (
-	"log/slog"
-	"os"
+	"fmt"
+	"strings"
 
 	"github.com/jamwujustyle/logger"
 )
@@ -10,7 +10,7 @@ import (
 func main() {
 	logger.InitLogger(1 == 0)
 
-	slog.Error("Hello")
+	str := "hello what the fuck"
 
-	os.Stdout.Write([]byte("hello world lets put the theory to test"))
+	fmt.Printf("%#v", strings.Fields(str))
 }

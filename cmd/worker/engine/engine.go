@@ -49,6 +49,10 @@ func (e *Engine) ExecuteScript(ctx context.Context, script []byte) (string, erro
 		return "", fmt.Errorf("failed to invoke lambda: %w", err)
 	}
 
+	if r.FunctionError != nil {
+		return "", fmt.Errorf("labmda runtime error: %s", *r.FunctionError)
+	}
+
 	var res ScriptResponse
 
 	if err := json.Unmarshal(r.Payload, &res); err != nil {
