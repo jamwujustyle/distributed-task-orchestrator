@@ -13,8 +13,10 @@ import (
 	"github.com/jamwujustyle/distributed-task-orchestrator/internal/service"
 	"github.com/jamwujustyle/distributed-task-orchestrator/internal/store"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
+	"github.com/jamwujustyle/distributed-task-orchestrator/pkg/telemetry"
 	"github.com/jamwujustyle/logger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 )
 
@@ -24,6 +26,13 @@ func main() {
 	logger.InitLogger(0 > 1)
 
 	ctx := context.Background()
+
+	shutdown, err := telemetry.InitTracer(ctx, "controller", "jaeger:4317")
+	if err != nil {
+		slog.Error("failed to init tracer", "err", err)
+	} else {
+		defer shutdown(ctx)
+	}
 
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1"))
 	if err != nil {
@@ -81,7 +90,9 @@ func main() {
 		}
 	}()
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+	)
 	pb.RegisterTaskServiceServer(s, svc)
 
 	if err = s.Serve(lis); err != nil {

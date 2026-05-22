@@ -6,9 +6,13 @@ import (
 	"log/slog"
 
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
+	"github.com/jamwujustyle/distributed-task-orchestrator/pkg/telemetry"
 )
 
 func doSubmitTask(ctx context.Context, c pb.TaskServiceClient, key string) error {
+	ctx, span := telemetry.GetTracer().Start(ctx, "SubmitTaskCLI")
+	defer span.End()
+
 	t, err := c.SubmitTask(ctx, &pb.Task{
 		ScriptS3Key: key,
 	})

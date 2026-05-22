@@ -7,7 +7,9 @@ import (
 	"time"
 
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
+	"github.com/jamwujustyle/distributed-task-orchestrator/pkg/telemetry"
 	"github.com/jamwujustyle/logger"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -20,7 +22,15 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	shutdown, err := telemetry.InitTracer(ctx, "cli", "localhost:4317")
+	if err == nil {
+		defer shutdown(ctx)
+	}
+
+	conn, err := grpc.NewClient(target,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
+	)
 	if err != nil {
 		slog.Error("failed to establish connection", "err", err)
 	}

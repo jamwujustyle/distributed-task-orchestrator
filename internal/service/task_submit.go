@@ -7,11 +7,15 @@ import (
 	"github.com/jamwujustyle/distributed-task-orchestrator/internal/store"
 	"github.com/jamwujustyle/distributed-task-orchestrator/pkg/metrics"
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
+	"github.com/jamwujustyle/distributed-task-orchestrator/pkg/telemetry"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *TaskService) SubmitTask(ctx context.Context, req *pb.Task) (*pb.TaskId, error) {
+	ctx, span := telemetry.GetTracer().Start(ctx, "SubmitTaskController")
+	defer span.End()
+
 	generatedID := uuid.New().String()
 	t := store.Task{
 		ID:          generatedID,

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
+	"github.com/jamwujustyle/distributed-task-orchestrator/pkg/telemetry"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
 )
@@ -35,10 +36,14 @@ func (p *TaskProducer) PublishTask(ctx context.Context, task *pb.Task) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal task to protobuf: %w", err)
 	}
-	return p.Writer.WriteMessages(ctx, kafka.Message{
+	msg := kafka.Message{
 		Key:   key,
 		Value: value,
-	})
+	}
+
+	telemetry.InjectTraceContext(ctx, &msg)
+
+	return p.Writer.WriteMessages(ctx, msg)
 }
 
 func (p *TaskProducer) Close() error { return p.Writer.Close() }
