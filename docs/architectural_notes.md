@@ -51,17 +51,14 @@ Add Kafka ✓
 * **Ansible Infrastructure Provisioning:** Ansible playbooks automate the setup of the VM dependencies, Docker, and K3s node clustering.
 * **Centralized Logging:** Deployed `loki-stack` (Loki, Promtail, and Grafana) to the Kubernetes cluster. Promtail automatically scrapes stdout/stderr logs from all running pods.
 * **Distributed Observability (Metrics & Monitoring):** Instrumented Go controller and worker codebases to serve Prometheus metrics (tracking tasks submitted, tasks processed, and task execution durations) on port `9091`. Deployed Prometheus server using Ansible Helm automation, enabling real-time metrics dashboards in Grafana.
+* **Distributed Tracing (OpenTelemetry):** Fully integrated OpenTelemetry tracing across the entire system. Traces capture the full end-to-end task lifecycle (CLI ➔ gRPC ➔ Controller ➔ Kafka ➔ Worker ➔ Status Updates), maintaining trace-context propagation across network and message boundaries. Traces are gathered and visualized using a Jaeger all-in-one backend inside the cluster.
 
 ### Next Steps & Backlog
 
-#### 1. Distributed Tracing (OpenTelemetry)
-* **Problem:** Tracking a single task's flow across CLI -> Controller -> Kafka -> Worker -> Lambda -> DynamoDB is difficult when diagnosing failure bottlenecks.
-* **Solution:** Implement context propagation using OpenTelemetry trace spans across the gRPC and Kafka network boundaries.
-
-#### 2. Lambda script execution Sandboxing
+#### 1. Lambda script execution Sandboxing
 * **Problem:** Workers invoke AWS Lambda functions executing raw bash scripts without validation, which poses security risks.
 * **Solution:** Apply command whitelisting, configure memory/CPU constraints, and namespace executions.
 
-#### 3. Integration Tests
+#### 2. Integration Tests
 * **Problem:** End-to-end task flows rely on manual testing via the CLI.
 * **Solution:** Create integration test suites to simulate and assert task lifecycle flows (Kafka publishing, LocalStack execution, S3 storage, and DynamoDB updates).
