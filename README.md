@@ -1,103 +1,48 @@
-# Distributed Task Orchestrator (Go + AWS + LocalStack)
+# Distributed Task Orchestrator
 
-A high-performance, distributed system designed to manage, store, and execute scripts across a decoupled architecture. Built with Go, leveraging AWS S3 for artifact storage and DynamoDB for state management, with LocalStack providing the development environment.
+A production-style distributed system for submitting, queuing, and executing sandboxed scripts across a multi-node Kubernetes cluster. Built from scratch as a learning project to gain hands-on mastery of backend infrastructure, cloud-native tooling, and distributed systems patterns.
 
-## 🏗 System Architecture
+## Architecture Overview
 
-The system is split into two primary binaries to ensure scalability and separation of concerns:
-
-- **Controller** (`cmd/controller`): The "Brain."
-  - Exposes a gRPC/API for task submission.
-  - Uploads script artifacts to S3.
-  - Initializes task state in DynamoDB as `PENDING`.
-
-- **Worker** (`cmd/worker`): The "Muscle."
-  - Polls/Receives tasks.
-  - Downloads scripts from S3.
-  - Executes the logic and updates DynamoDB status (`RUNNING` ➔ `COMPLETED`/`FAILED`).
-
-## 🛠 Tech Stack
-
-- **Language:** Go (Golang)
-- **Infrastructure:** LocalStack (Simulating AWS S3 & DynamoDB)
-- **Logging:** Custom `slog` wrapper with colored terminal output and source-line tracking.
-- **Storage Layer:**
-  - **S3:** Content-addressable storage for task scripts.
-  - **DynamoDB:** Low-latency NoSQL for task metadata and lifecycle tracking.
-
-## 📂 Project Structure
-
-```plaintext
-.
-├── cmd
-│   ├── controller    # Main entry point for the API/Controller
-│   ├── worker        # Main entry point for the Execution Worker
-│   └── cli           # Admin CLI tool for manual task management
-├── internal
-│   ├── store         # Storage Layer (S3 & DynamoDB logic)
-│   ├── logger        # Custom slog initialization and handlers
-│   └── engine        # Business logic for task execution
-├── pkg
-│   └── protocol      # Protobuf definitions and generated gRPC code
-└── Makefile          # Automation for LocalStack and Builds
+```
+CLI ──gRPC──▸ Controller ──Kafka──▸ Workers ──AWS SDK(localstack)──▸ Lambda (Sandboxed Execution)
+                │                      │                        │
+                ▼                      ▼                        ▼
+             DynamoDB              S3 (Scripts)           Restricted Shell
+           (Task State)          (Artifact Store)      (Whitelisted Binaries)
 ```
 
-## 💡 Key Design Decisions
+**Controller** — gRPC API that accepts task submissions, uploads scripts to S3, publishes events to Kafka, and tracks task lifecycle in DynamoDB.
 
-### 1. Lazy Connections & Startup Pings
+**Workers** — Kafka consumers that pick up tasks, retrieve scripts from S3, invoke Lambda for sandboxed execution, and report results back to DynamoDB.
 
-In Go, AWS clients are initialized as structural shells. To ensure the environment is ready, we implement a `Ping()` method using `HeadBucket` (S3) and `DescribeTable` (DynamoDB). This forces a "fail-fast" behavior if LocalStack is offline.
+**Lambda Sandbox** — Executes user scripts under a 4-layer security model: static analysis, environment cleansing, restricted `PATH` via symlinked binaries, and OS-level privilege dropping (`nobody` user).
 
-### 2. Dependency Injection
+## Tech Stack
 
-We pass `aws.Config` into store constructors (`NewS3Store`, `NewDynamoStore`). This allows us to point the entire system to LocalStack for development or the real AWS Cloud for production just by changing environment variables.
+| Layer | Technologies |
+| :--- | :--- |
+| **Language** | Go |
+| **Communication** | gRPC, Protocol Buffers, Kafka (event-driven messaging) |
+| **Cloud Services** | AWS Lambda, S3, DynamoDB (via LocalStack) |
+| **Orchestration** | Kubernetes (K3s), multi-node Vagrant VMs |
+| **Provisioning** | Ansible (playbooks + Helm automation) |
+| **Observability** | Prometheus, Grafana, Loki + Promtail, OpenTelemetry, Jaeger |
+| **Security** | Lambda sandboxing (command whitelisting, env stripping, privilege drop) |
+| **Tooling** | Docker, Just, Air (hot-reload) |
 
-### 3. Atomic Updates
+## Infrastructure
 
-We use Expression Attribute Names (`#status`) in DynamoDB updates to avoid conflicts with reserved words and ensure state transitions are consistent across multiple workers.
+- **Vagrant** spins up multi-node VMs (control plane + worker nodes)
+- **Ansible** provisions each node end-to-end: installs Docker, bootstraps K3s, joins worker nodes to the cluster, and deploys services via Helm charts (Kafka, Prometheus, Loki stack)
+- **Kubernetes manifests** (`k8s/`) define all application deployments, services, config, and secrets — including a LocalStack pod with an init container that extracts and registers the Lambda binary on startup
 
-## 🚀 Development Workflow
+## Local Development
 
-### Infrastructure Setup
+- **Docker Compose** runs the full stack locally (LocalStack, Kafka, controller, worker) for rapid iteration
+- **Air** provides hot-reload on code changes — saves are reflected instantly without manual rebuilds
+- **CLI** (`cmd/cli`) connects to the controller via gRPC for uploading scripts, submitting tasks, and retrieving results in real time
 
-Ensure LocalStack is running via Docker, then initialize the storage:
+## Purpose
 
-```bash
-# Create S3 Bucket
-awslocal s3 mb s3://tasks-bucket
-
-# Create DynamoDB Table
-awslocal dynamodb create-table \
-  --table-name TasksTable \
-  --attribute-definitions AttributeName=ID,AttributeType=S \
-  --key-schema AttributeName=ID,KeyType=HASH \
-  --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
-```
-
-### Running the App
-
-```bash
-# Set local environment variables
-export AWS_REGION=us-east-1
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-
-# Build and run
-make run
-```
-
-## 📋 Current Data Models
-
-### Task Object
-
-| Field         | Type     | Description                                  |
-| ------------- | -------- | -------------------------------------------- |
-| `ID`          | `string` | Unique UUID for the task.                    |
-| `ScriptS3Key` | `string` | Path to the script file in S3.               |
-| `Status`      | `enum`   | `PENDING`, `RUNNING`, `COMPLETED`, `FAILED`. |
-| `CreatedAt`   | `int64`  | Unix timestamp of creation.                  |
-| `UpdatedAt`   | `int64`  | Unix timestamp of last state change.         |
-
-### GOAL
-
-GAIN MASTERY OF THE STACK
+This project exists purely for learning. The goal is end-to-end fluency across the modern backend stack — not just writing Go, but wiring together messaging, infrastructure-as-code, container orchestration, observability, and security into a single cohesive system.

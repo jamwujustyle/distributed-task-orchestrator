@@ -52,13 +52,10 @@ Add Kafka ✓
 * **Centralized Logging:** Deployed `loki-stack` (Loki, Promtail, and Grafana) to the Kubernetes cluster. Promtail automatically scrapes stdout/stderr logs from all running pods.
 * **Distributed Observability (Metrics & Monitoring):** Instrumented Go controller and worker codebases to serve Prometheus metrics (tracking tasks submitted, tasks processed, and task execution durations) on port `9091`. Deployed Prometheus server using Ansible Helm automation, enabling real-time metrics dashboards in Grafana.
 * **Distributed Tracing (OpenTelemetry):** Fully integrated OpenTelemetry tracing across the entire system. Traces capture the full end-to-end task lifecycle (CLI ➔ gRPC ➔ Controller ➔ Kafka ➔ Worker ➔ Status Updates), maintaining trace-context propagation across network and message boundaries. Traces are gathered and visualized using a Jaeger all-in-one backend inside the cluster.
+* **Lambda Sandboxing:** Implemented a 4-layer defense-in-depth security model for script execution: (1) static analysis blocking absolute/relative path bypasses, (2) environment cleansing stripping AWS credentials from the child process, (3) restricted `PATH` via symlinked whitelisted binaries (`echo`, `cat`, `grep`, `sleep`, `date`), and (4) OS-level privilege dropping to the `nobody` user (UID 65534).
 
 ### Next Steps & Backlog
 
-#### 1. Lambda script execution Sandboxing
-* **Problem:** Workers invoke AWS Lambda functions executing raw bash scripts without validation, which poses security risks.
-* **Solution:** Apply command whitelisting, configure memory/CPU constraints, and namespace executions.
-
-#### 2. Integration Tests
+#### 1. Integration Tests
 * **Problem:** End-to-end task flows rely on manual testing via the CLI.
 * **Solution:** Create integration test suites to simulate and assert task lifecycle flows (Kafka publishing, LocalStack execution, S3 storage, and DynamoDB updates).
