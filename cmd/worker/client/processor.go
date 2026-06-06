@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/jamwujustyle/distributed-task-orchestrator/cmd/worker/engine"
@@ -14,6 +15,8 @@ func RunTaskLifecycle(ctx context.Context, c pb.TaskServiceClient, e *engine.Eng
 	defer func() {
 		metrics.TaskDuration.Observe(time.Since(start).Seconds())
 	}()
+
+	slog.Info("running task lifecycle", "taskId", task.GetId(), "scriptKey", task.GetScriptS3Key())
 
 	if err := doUpdateTask(ctx, c, task.GetId(), pb.TaskStatus_RUNNING, ""); err != nil {
 		metrics.TasksProcessed.WithLabelValues("failed").Inc()

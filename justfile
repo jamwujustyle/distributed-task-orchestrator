@@ -43,3 +43,12 @@ start:
 
 provision:
 	cd ansible && ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini playbook.yaml
+
+test:
+	./scripts/forward-ports.sh
+	go fmt ./...
+	go test -v ./...
+
+kuberes:
+	kubectl rollout restart deployment worker-deployment
+	kubectl rollout restart deployment controller-deployment

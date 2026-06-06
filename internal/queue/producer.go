@@ -3,6 +3,8 @@ package queue
 import (
 	"context"
 	"fmt"
+	"net"
+	"strings"
 	"time"
 
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
@@ -16,6 +18,18 @@ type TaskProducer struct {
 }
 
 func NewTaskProducer(brokers []string, topic string) *TaskProducer {
+	var transport *kafka.Transport
+
+	if len(brokers) > 0 && (strings.Contains(brokers[0], "localhost")) || strings.Contains(brokers[0], "127.0.0.1") {
+		transport = &kafka.Transport{
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				if strings.Contains(address, "kafka-controller") {
+					address = "127.0.0.1:9092"
+				}
+				return (&net.Dialer{}).DialContext(ctx, network, address)
+			},
+		}
+	}
 	return &TaskProducer{
 		Writer: &kafka.Writer{
 			Addr:         kafka.TCP(brokers...),
@@ -25,6 +39,7 @@ func NewTaskProducer(brokers []string, topic string) *TaskProducer {
 			RequiredAcks: kafka.RequireAll,
 			MaxAttempts:  5,
 			WriteTimeout: 10 * time.Second,
+			Transport:    transport,
 		},
 	}
 }

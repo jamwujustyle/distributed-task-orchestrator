@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -28,7 +29,11 @@ type Engine struct {
 func NewEngine(cfg aws.Config, fnName string) *Engine {
 	return &Engine{
 		lambda: lambda.NewFromConfig(cfg, func(o *lambda.Options) {
-			o.BaseEndpoint = aws.String("http://localstack:4566")
+			if ep := os.Getenv("AWS_ENDPOINT_URL"); ep != "" {
+				o.BaseEndpoint = aws.String(ep)
+			} else {
+				o.BaseEndpoint = aws.String("http://localstack:4566")
+			}
 		}),
 		fn: fnName,
 	}

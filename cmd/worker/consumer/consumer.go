@@ -2,6 +2,9 @@ package consumer
 
 import (
 	"context"
+	"net"
+	"strings"
+
 	pb "github.com/jamwujustyle/distributed-task-orchestrator/pkg/protocol/v1"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
@@ -12,6 +15,20 @@ type TaskConsumer struct {
 }
 
 func NewConsumer(brokers []string, topic string, groupID string) *TaskConsumer {
+	var dialer *kafka.Dialer
+
+	if len(brokers) > 0 && (strings.Contains(brokers[0], "localhost") || strings.Contains(brokers[0], "127.0.0.1")) {
+		dialer = &kafka.Dialer{
+			DualStack: true,
+			DialFunc: func(ctx context.Context, network, address string) (net.Conn, error) {
+				if strings.Contains(address, "kafka-controller") {
+					address = "127.0.0.1:9092"
+				}
+				return (&net.Dialer{}).DialContext(ctx, network, address)
+			},
+		}
+	}
+
 	return &TaskConsumer{
 		consumer: kafka.NewReader(kafka.ReaderConfig{
 			Brokers:  brokers,
@@ -19,6 +36,7 @@ func NewConsumer(brokers []string, topic string, groupID string) *TaskConsumer {
 			GroupID:  groupID,
 			MinBytes: 10e3,
 			MaxBytes: 10e6,
+			Dialer:   dialer,
 		}),
 	}
 }
